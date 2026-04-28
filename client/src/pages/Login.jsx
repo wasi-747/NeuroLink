@@ -33,7 +33,7 @@ const Login = () => {
       
       if (response.data.success) {
         dispatch({ type: "LOGIN_SUCCESS", payload: response.data.user });
-        toast.success("Welcome back to MindSpace!");
+        toast.success("Welcome back to NeuroLink!");
         navigate("/");
       }
     } catch (error) {

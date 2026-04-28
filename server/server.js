@@ -38,7 +38,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs (increased to prevent dev lockouts)
 });
 app.use(limiter);
 
@@ -77,6 +77,8 @@ import gratitudeRoutes from "./routes/gratitude.js";
 import forumRoutes from "./routes/forum.js";
 import resourceRoutes from "./routes/resource.js";
 import therapistRoutes from "./routes/therapist.js";
+import courseRoutes from "./routes/course.js";
+import adminRoutes from "./routes/admin.js";
 
 // Middleware
 import errorHandler from "./middleware/error.js";
@@ -91,6 +93,8 @@ app.use("/api/v1/gratitude", gratitudeRoutes);
 app.use("/api/v1/forum", forumRoutes);
 app.use("/api/v1/resources", resourceRoutes);
 app.use("/api/v1/therapists", therapistRoutes);
+app.use("/api/v1/courses", courseRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 app.use(errorHandler);
 

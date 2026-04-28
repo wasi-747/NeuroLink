@@ -104,7 +104,12 @@ const UserBookings = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-50 mt-auto">
+              <div className="pt-4 border-t border-slate-50 mt-auto space-y-2">
+                {booking.status === "Confirmed" && booking.sessionFormat === "Online" && booking.meetingLink && (
+                  <Link to={`/room/${booking.meetingLink}`} className="block w-full py-2.5 bg-brand-600 text-white hover:bg-brand-700 text-center font-bold rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
+                    <Video className="w-4 h-4" /> Join Video Session
+                  </Link>
+                )}
                 {booking.status === "Completed" ? (
                   <Link to={`/therapists/${booking.therapistId._id}`} className="block w-full py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 text-center font-bold rounded-xl transition-colors">
                     Leave a Review

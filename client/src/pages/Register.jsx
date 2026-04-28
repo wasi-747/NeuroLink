@@ -79,7 +79,7 @@ const Register = () => {
               <BrainCircuit className="w-8 h-8 text-brand-600" />
             </div>
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Create Account</h2>
-            <p className="text-slate-500 mt-2 text-sm font-medium">Join MindSpace for free</p>
+            <p className="text-slate-500 mt-2 text-sm font-medium">Join NeuroLink for free</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

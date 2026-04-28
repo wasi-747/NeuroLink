@@ -28,7 +28,7 @@ const Navbar = () => {
               <div className="bg-brand-100 p-2 rounded-xl group-hover:bg-brand-500 transition-colors">
                 <BrainCircuit className="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" />
               </div>
-              <span className="font-bold text-xl tracking-tight text-slate-900">MindSpace</span>
+              <span className="font-bold text-xl tracking-tight text-slate-900">NeuroLink</span>
             </Link>
           </div>
 
@@ -48,6 +48,14 @@ const Navbar = () => {
                 <Link to="/therapists" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
                   Therapists
                 </Link>
+                <Link to="/courses" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
+                  Courses
+                </Link>
+                {user?.role === "admin" && (
+                  <Link to="/admin" className="text-brand-600 hover:text-brand-700 font-bold px-3 py-2 rounded-md transition-colors bg-brand-50 border border-brand-100 shadow-sm">
+                    Admin Portal
+                  </Link>
+                )}
                 <div className="flex items-center gap-4 ml-4">
                   <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
                     <User size={16} />
@@ -55,6 +63,9 @@ const Navbar = () => {
                   </div>
                   <Link to="/bookings" className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full">
                     My Bookings
+                  </Link>
+                  <Link to="/my-courses" className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full">
+                    My Courses
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -116,8 +127,19 @@ const Navbar = () => {
                 <Link to="/therapists" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
                   Find a Therapist
                 </Link>
+                <Link to="/courses" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Courses
+                </Link>
+                {user?.role === "admin" && (
+                  <Link to="/admin" className="block px-4 py-2 text-base font-bold text-brand-700 bg-brand-50 hover:bg-brand-100" onClick={() => setIsMobileMenuOpen(false)}>
+                    Admin Portal
+                  </Link>
+                )}
                 <Link to="/bookings" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
                   My Bookings
+                </Link>
+                <Link to="/my-courses" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  My Courses
                 </Link>
                 <button
                   onClick={() => {

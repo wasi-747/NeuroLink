@@ -135,7 +135,7 @@ const Dashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="h-10 w-10 animate-spin text-brand-500 mb-4" />
-        <p className="text-slate-500 font-medium animate-pulse">Loading your MindSpace...</p>
+        <p className="text-slate-500 font-medium animate-pulse">Loading your NeuroLink...</p>
       </div>
     );
   }

@@ -37,9 +37,12 @@ const BookingSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["Pending", "Confirmed", "Declined", "Completed", "Cancelled"],
-      default: "Pending",
+      default: "Confirmed", // TEMPORARILY CHANGED TO CONFIRMED FOR TESTING
     },
     therapistNote: {
+      type: String,
+    },
+    meetingLink: {
       type: String,
     },
   },

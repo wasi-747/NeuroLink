@@ -10,7 +10,7 @@ dotenv.config();
 const therapists = [
   {
     name: "Dr. Sarah Jenkins",
-    email: "sarah.jenkins@mindspace.com",
+    email: "sarah.jenkins@neurolink.com",
     title: "Clinical Psychologist",
     specializations: ["Anxiety Therapy", "Depression Support", "Anger Management"],
     location: "Dhaka",
@@ -23,7 +23,7 @@ const therapists = [
   },
   {
     name: "Rahim Chowdhury",
-    email: "rahim.c@mindspace.com",
+    email: "rahim.c@neurolink.com",
     title: "Student Counselor",
     specializations: ["Study-Based Counseling", "Career Stress", "Sleep Disorders"],
     location: "Chittagong",
@@ -36,7 +36,7 @@ const therapists = [
   },
   {
     name: "Aisha Rahman",
-    email: "aisha.r@mindspace.com",
+    email: "aisha.r@neurolink.com",
     title: "Trauma Specialist",
     specializations: ["Trauma & PTSD", "Grief Counseling", "Relationship Counseling"],
     location: "Dhaka",
@@ -116,6 +116,76 @@ const seedData = async () => {
 
     console.log("Creating articles...");
     await Article.insertMany(articles);
+
+    console.log("Creating courses...");
+    const Course = (await import("../models/Course.js")).default;
+    await Course.deleteMany();
+    await Course.insertMany([
+      {
+        title: "Overcoming Anxiety: A Student's Guide",
+        slug: "overcoming-anxiety-student-guide",
+        description: "A comprehensive guide designed specifically for university students struggling with academic and social anxiety. Learn actionable strategies to regain control.",
+        instructor: { name: "Dr. Sarah Jenkins", bio: "Clinical Psychologist with 10+ years experience." },
+        thumbnailGradient: "from-blue-500 to-indigo-600",
+        price: 0,
+        originalPrice: 499,
+        duration: 4.5,
+        lessonCount: 4,
+        level: "Beginner",
+        category: "Anxiety",
+        rating: 4.8,
+        enrollmentCount: 1250,
+        tags: ["anxiety", "students", "cbt"],
+        whatYouWillLearn: ["Identify anxiety triggers", "Apply CBT techniques", "Manage exam panic"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Module 1: Understanding Anxiety",
+            order: 1,
+            lessons: [
+              { title: "What is Anxiety?", duration: 15, type: "video", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", isPreview: true, order: 1 },
+              { title: "The Science of Stress", duration: 10, type: "article", content: "Stress is a biological response...", isPreview: false, order: 2 }
+            ]
+          },
+          {
+            title: "Module 2: Coping Mechanisms",
+            order: 2,
+            lessons: [
+              { title: "Breathing Techniques", duration: 20, type: "video", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", isPreview: false, order: 1 },
+              { title: "Knowledge Quiz", duration: 5, type: "quiz", content: "Quiz data here", isPreview: false, order: 2 }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Stress Management for Students",
+        slug: "stress-management-students",
+        description: "Learn how to balance your coursework, social life, and mental health without burning out.",
+        instructor: { name: "Rahim Chowdhury", bio: "Student Counselor" },
+        thumbnailGradient: "from-emerald-500 to-teal-600",
+        price: 499,
+        duration: 3,
+        lessonCount: 3,
+        level: "Intermediate",
+        category: "Stress",
+        rating: 4.5,
+        enrollmentCount: 840,
+        tags: ["stress", "time management"],
+        whatYouWillLearn: ["Time blocking", "Saying no", "Sleep hygiene"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Module 1: The Basics",
+            order: 1,
+            lessons: [
+              { title: "Introduction to Stress", duration: 12, type: "video", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", isPreview: true, order: 1 },
+              { title: "Time Blocking 101", duration: 25, type: "video", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", isPreview: false, order: 2 },
+              { title: "Sleep Habits", duration: 15, type: "article", content: "Sleep is vital...", isPreview: false, order: 3 }
+            ]
+          }
+        ]
+      }
+    ]);
 
     console.log("✅ Data Imported successfully!");
     process.exit();

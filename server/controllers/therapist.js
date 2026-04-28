@@ -76,6 +76,8 @@ export const getTherapist = asyncHandler(async (req, res, next) => {
   });
 });
 
+import crypto from "crypto";
+
 // @desc    Create a booking request
 // @route   POST /api/v1/therapists/:id/book
 // @access  Private (Student only)
@@ -86,6 +88,11 @@ export const createBooking = asyncHandler(async (req, res, next) => {
   const therapist = await Therapist.findById(req.params.id);
   if (!therapist) {
     return res.status(404).json({ success: false, error: "Therapist not found" });
+  }
+
+  // Generate a meeting link if session format is Online
+  if (req.body.sessionFormat === "Online") {
+    req.body.meetingLink = crypto.randomBytes(8).toString('hex');
   }
 
   const booking = await Booking.create(req.body);
