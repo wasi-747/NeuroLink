@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { BrainCircuit, Menu, X, LogOut, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
 const Navbar = () => {
@@ -100,71 +101,114 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="sm:hidden border-t border-slate-200 bg-white">
-          <div className="pt-2 pb-3 space-y-1">
-            {isAuthenticated ? (
-              <>
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
-                  <div className="bg-brand-100 p-2 rounded-full">
-                    <User className="h-5 w-5 text-brand-600" />
-                  </div>
-                  <div>
-                    <div className="text-base font-medium text-slate-800">{user?.name || "Student"}</div>
-                    <div className="text-sm font-medium text-slate-500">{user?.email || "Student Account"}</div>
-                  </div>
-                </div>
-                <Link to="/" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Dashboard
-                </Link>
-                <Link to="/community" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Community Forum
-                </Link>
-                <Link to="/resources" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Resources
-                </Link>
-                <Link to="/therapists" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Find a Therapist
-                </Link>
-                <Link to="/courses" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Courses
-                </Link>
-                {user?.role === "admin" && (
-                  <Link to="/admin" className="block px-4 py-2 text-base font-bold text-brand-700 bg-brand-50 hover:bg-brand-100" onClick={() => setIsMobileMenuOpen(false)}>
-                    Admin Portal
-                  </Link>
-                )}
-                <Link to="/bookings" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  My Bookings
-                </Link>
-                <Link to="/my-courses" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  My Courses
-                </Link>
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl z-50 flex flex-col md:hidden"
+            >
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <span className="font-bold text-xl tracking-tight text-slate-900">Menu</span>
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left flex items-center gap-3 px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 -mr-2 text-slate-500 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
-                  <LogOut size={18} />
-                  Logout
+                  <X size={20} />
                 </button>
-              </>
-            ) : (
-              <div className="p-4 flex flex-col gap-3">
-                <Link to="/login" className="block text-center w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm text-base font-medium text-slate-700 bg-white hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
-                  Sign in
-                </Link>
-                <Link to="/register" className="block text-center w-full px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-brand-600 hover:bg-brand-700" onClick={() => setIsMobileMenuOpen(false)}>
-                  Get Started
-                </Link>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+
+              <div className="flex-1 overflow-y-auto py-4">
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-6 py-4 mb-2 bg-slate-50 border-y border-slate-100 flex items-center gap-3">
+                      <div className="bg-brand-100 p-2.5 rounded-full">
+                        <User className="h-6 w-6 text-brand-600" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold text-slate-800">{user?.name || "Student"}</div>
+                        <div className="text-sm font-medium text-slate-500">{user?.email || "Student Account"}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="px-3 space-y-1">
+                      <Link to="/" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        Dashboard
+                      </Link>
+                      <Link to="/community" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        Community Forum
+                      </Link>
+                      <Link to="/resources" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        Resources
+                      </Link>
+                      <Link to="/therapists" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        Find a Therapist
+                      </Link>
+                      <Link to="/courses" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        Courses
+                      </Link>
+                      <div className="my-2 border-t border-slate-100" />
+                      <Link to="/bookings" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        My Bookings
+                      </Link>
+                      <Link to="/my-courses" className="block px-4 py-3 text-base font-medium text-slate-700 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                        My Courses
+                      </Link>
+                      
+                      {user?.role === "admin" && (
+                        <>
+                          <div className="my-2 border-t border-slate-100" />
+                          <Link to="/admin" className="block px-4 py-3 text-base font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>
+                            Admin Portal
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-6 py-4 flex flex-col gap-4">
+                    <Link to="/login" className="block text-center w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm text-base font-bold text-slate-700 bg-white hover:bg-slate-50 min-h-[44px] flex items-center justify-center" onClick={() => setIsMobileMenuOpen(false)}>
+                      Sign in
+                    </Link>
+                    <Link to="/register" className="block text-center w-full px-4 py-3 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-brand-600 hover:bg-brand-700 min-h-[44px] flex items-center justify-center" onClick={() => setIsMobileMenuOpen(false)}>
+                      Get Started
+                    </Link>
+                  </div>
+                )}
+              </div>
+              
+              {isAuthenticated && (
+                <div className="p-4 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left flex items-center justify-center gap-2 px-4 py-3 text-base font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors min-h-[44px]"
+                  >
+                    <LogOut size={20} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

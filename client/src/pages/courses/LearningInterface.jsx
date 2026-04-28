@@ -217,8 +217,8 @@ const LearningInterface = () => {
         </button>
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-80 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Sidebar (Bottom drawer on mobile, Left sidebar on desktop) */}
+      <div className={`fixed bottom-0 inset-x-0 z-40 w-full h-[60vh] bg-white border-t border-slate-200 transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:w-80 lg:h-full lg:border-t-0 lg:border-r lg:relative flex flex-col ${sidebarOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:-translate-x-full lg:translate-y-0'}`}>
         
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-100 flex items-start justify-between shrink-0 bg-slate-50">
