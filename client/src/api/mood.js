@@ -1,6 +1,6 @@
 import api from './axios';
 
-export const addMood = async (moodData) => {
+export const createMood = async (moodData) => {
   try {
     const { data } = await api.post('/mood', moodData);
     return { data, error: null };

@@ -7,8 +7,8 @@ import User from '../models/User.js';
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
 
-  if (req.cookies.accessToken) {
-    token = req.cookies.accessToken;
+  if (req.cookies.token) {
+    token = req.cookies.token;
   }
 
   // Make sure token exists

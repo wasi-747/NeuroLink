@@ -1,0 +1,150 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { BrainCircuit, Menu, X, LogOut, User } from "lucide-react";
+import axios from "axios";
+
+const Navbar = () => {
+  const { isAuthenticated, user, dispatch } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.get("http://localhost:5000/api/v1/auth/logout");
+    } catch (err) {
+      console.error(err);
+    }
+    dispatch({ type: "LOGOUT" });
+    navigate("/login");
+  };
+
+  return (
+    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="bg-brand-100 p-2 rounded-xl group-hover:bg-brand-500 transition-colors">
+                <BrainCircuit className="h-6 w-6 text-brand-600 group-hover:text-white transition-colors" />
+              </div>
+              <span className="font-bold text-xl tracking-tight text-slate-900">MindSpace</span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden sm:flex sm:items-center sm:space-x-8">
+            {isAuthenticated ? (
+              <>
+                <Link to="/" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
+                  Dashboard
+                </Link>
+                <Link to="/community" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
+                  Community
+                </Link>
+                <Link to="/resources" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
+                  Resources
+                </Link>
+                <Link to="/therapists" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 rounded-md transition-colors">
+                  Therapists
+                </Link>
+                <div className="flex items-center gap-4 ml-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                    <User size={16} />
+                    <span>{user?.name || "Student"}</span>
+                  </div>
+                  <Link to="/bookings" className="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-full">
+                    My Bookings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-slate-500 hover:text-red-600 transition-colors p-2 rounded-md hover:bg-red-50"
+                  >
+                    <LogOut size={18} />
+                    <span className="text-sm font-medium">Logout</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/login" className="text-slate-600 hover:text-brand-600 font-medium px-3 py-2 transition-colors">
+                  Sign in
+                </Link>
+                <Link to="/register" className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors blur-0">
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center sm:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-500"
+            >
+              {isMobileMenuOpen ? <X className="block h-6 w-6" /> : <Menu className="block h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="sm:hidden border-t border-slate-200 bg-white">
+          <div className="pt-2 pb-3 space-y-1">
+            {isAuthenticated ? (
+              <>
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
+                  <div className="bg-brand-100 p-2 rounded-full">
+                    <User className="h-5 w-5 text-brand-600" />
+                  </div>
+                  <div>
+                    <div className="text-base font-medium text-slate-800">{user?.name || "Student"}</div>
+                    <div className="text-sm font-medium text-slate-500">{user?.email || "Student Account"}</div>
+                  </div>
+                </div>
+                <Link to="/" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <Link to="/community" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Community Forum
+                </Link>
+                <Link to="/resources" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Resources
+                </Link>
+                <Link to="/therapists" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Find a Therapist
+                </Link>
+                <Link to="/bookings" className="block px-4 py-2 text-base font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  My Bookings
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left flex items-center gap-3 px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <div className="p-4 flex flex-col gap-3">
+                <Link to="/login" className="block text-center w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm text-base font-medium text-slate-700 bg-white hover:bg-slate-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  Sign in
+                </Link>
+                <Link to="/register" className="block text-center w-full px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-brand-600 hover:bg-brand-700" onClick={() => setIsMobileMenuOpen(false)}>
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default Navbar;

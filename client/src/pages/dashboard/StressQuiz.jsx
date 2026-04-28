@@ -1,198 +1,223 @@
-import React, { useState, useEffect } from 'react';
-import { getQuestions, submitQuiz, getHistory } from '../../api/stressQuiz';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState } from "react";
+import { submitQuiz } from "../../api/stressQuiz";
+import { toast } from "react-hot-toast";
+import { Zap, ChevronRight, ChevronLeft, Loader2, RefreshCw, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const answerOptions = [
-  { text: 'Never', value: 0 },
-  { text: 'Almost Never', value: 1 },
-  { text: 'Sometimes', value: 2 },
-  { text: 'Fairly Often', value: 3 },
-  { text: 'Very Often', value: 4 },
+const PSS_QUESTIONS = [
+  { id: 1, text: "In the last month, how often have you been upset because of something that happened unexpectedly?", reverse: false },
+  { id: 2, text: "In the last month, how often have you felt that you were unable to control the important things in your life?", reverse: false },
+  { id: 3, text: "In the last month, how often have you felt nervous and 'stressed'?", reverse: false },
+  { id: 4, text: "In the last month, how often have you felt confident about your ability to handle your personal problems?", reverse: true },
+  { id: 5, text: "In the last month, how often have you felt that things were going your way?", reverse: true },
+  { id: 6, text: "In the last month, how often have you found that you could not cope with all the things that you had to do?", reverse: false },
+  { id: 7, text: "In the last month, how often have you been able to control irritations in your life?", reverse: true },
+  { id: 8, text: "In the last month, how often have you felt that you were on top of things?", reverse: true },
+  { id: 9, text: "In the last month, how often have you been angered because of things that were outside of your control?", reverse: false },
+  { id: 10, text: "In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?", reverse: false },
+];
+
+const OPTIONS = [
+  { value: 0, label: "Never", emoji: "😌" },
+  { value: 1, label: "Almost Never", emoji: "🙂" },
+  { value: 2, label: "Sometimes", emoji: "😐" },
+  { value: 3, label: "Fairly Often", emoji: "😟" },
+  { value: 4, label: "Very Often", emoji: "😖" },
 ];
 
 const StressQuiz = () => {
-  const [questions, setQuestions] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0); // 0-9 for questions, 10 for results
   const [answers, setAnswers] = useState({});
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [view, setView] = useState('new'); // 'new', 'result', 'history'
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      const { data, error } = await getQuestions();
-      if (data) {
-        setQuestions(data.data);
-      } else {
-        setError('Could not load quiz questions.');
-      }
-    };
-    fetchQuestions();
-  }, []);
-
-  const handleAnswer = (questionId, value) => {
-    setAnswers({ ...answers, [questionId]: value });
-    // Move to next question
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleOptionSelect = (value) => {
+    setAnswers({ ...answers, [currentStep]: value });
+    // Automatically proceed to next step after a brief delay for UX
+    if (currentStep < 9) {
+      setTimeout(() => setCurrentStep(prev => prev + 1), 350);
     }
+  };
+
+  const calculateTotalScore = () => {
+    let total = 0;
+    Object.keys(answers).forEach((stepIndex) => {
+      const q = PSS_QUESTIONS[stepIndex];
+      const val = answers[stepIndex];
+      if (q.reverse) {
+        // Reverse scoring: 0=4, 1=3, 2=2, 3=1, 4=0
+        total += (4 - val);
+      } else {
+        total += val;
+      }
+    });
+    return total;
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(answers).length !== questions.length) {
-      setError('Please answer all questions before submitting.');
+    if (Object.keys(answers).length < 10) {
+      toast.error("Please answer all questions.");
       return;
     }
-    setError('');
-    const { data, error } = await submitQuiz(answers);
-    if (data) {
-      setResult(data.data);
-      setView('result');
-    } else {
-      setError('Could not submit your quiz. Please try again.');
+    
+    setIsSubmitting(true);
+    const score = calculateTotalScore();
+    const quizData = {
+      score,
+      answers: Object.values(answers)
+    };
+
+    try {
+      const res = await submitQuiz(quizData);
+      setResult(res.data.data);
+      setCurrentStep(10);
+      toast.success("Quiz completed successfully");
+    } catch (err) {
+      toast.error("Failed to submit quiz results");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const fetchHistory = async () => {
-    const { data, error } = await getHistory();
-    if (data) {
-      setHistory(data.data);
-      setView('history');
-    } else {
-      setError('Could not fetch quiz history.');
-    }
-  };
-
-  const startNewQuiz = () => {
-    setAnswers({});
-    setCurrentQuestionIndex(0);
-    setResult(null);
-    setView('new');
-    setError('');
-  };
-
-  const renderQuiz = () => {
-    if (questions.length === 0) return <p>Loading quiz...</p>;
-    const question = questions[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-
-    return (
-      <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-          <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-        </div>
-        <h3 className="text-lg font-semibold mb-4">
-          ({currentQuestionIndex + 1}/{questions.length}) {question.text}
-        </h3>
-        <div className="flex flex-col space-y-2">
-          {answerOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleAnswer(question.id, option.value)}
-              className={`w-full text-left p-3 border rounded-lg hover:bg-gray-100 ${
-                answers[question.id] === option.value ? 'bg-blue-100 border-blue-500' : ''
-              }`}
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-        {currentQuestionIndex === questions.length - 1 && (
-          <button
-            onClick={handleSubmit}
-            disabled={Object.keys(answers).length !== questions.length}
-            className="mt-6 w-full bg-green-500 text-white p-2 rounded hover:bg-green-600 disabled:bg-gray-400"
-          >
-            Submit Quiz
-          </button>
-        )}
-      </div>
-    );
-  };
-
-  const renderResult = () => (
-    <div className="p-4 border rounded-lg bg-white shadow-sm text-center">
-      <h3 className="text-2xl font-bold mb-2">Your Result</h3>
-      <p className="text-lg mb-1">
-        Stress Level: <span className="font-semibold">{result.level}</span>
-      </p>
-      <p className="text-lg mb-4">
-        Score: <span className="font-semibold">{result.score}</span> (out of 40)
-      </p>
-      <div className="text-left mb-6">
-        <h4 className="font-bold text-md mb-2">Recommendations:</h4>
-        <ul className="list-disc list-inside space-y-1">
-          {result.recommendations.map((rec, index) => (
-            <li key={index}>{rec}</li>
-          ))}
-        </ul>
-      </div>
-      <button onClick={startNewQuiz} className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-        Take Quiz Again
-      </button>
-    </div>
-  );
-
-  const renderHistory = () => {
-    const chartData = history.map(h => ({
-        name: new Date(h.timestamp).toLocaleDateString(),
-        score: h.score
-    })).reverse();
-
-    return (
-      <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <h3 className="text-2xl font-bold mb-4">Quiz History</h3>
-        {history.length > 0 ? (
-            <>
-            <div className="h-64 mb-8">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                        <XAxis dataKey="name" />
-                        <YAxis domain={[0, 40]} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="score" fill="#8884d8" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-            <div className="space-y-4">
-            {history.map((item) => (
-              <div key={item._id} className="p-3 border rounded-lg">
-                <p>
-                  <strong>Date:</strong> {new Date(item.timestamp).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Score:</strong> {item.score} - <strong>Level:</strong> {item.level}
-                </p>
-              </div>
-            ))}
-          </div>
-          </>
-        ) : (
-          <p>No quiz history found.</p>
-        )}
-      </div>
-    );
+  const getResultColor = (level) => {
+    if (level === "Low") return "text-emerald-600 bg-emerald-50 border-emerald-200";
+    if (level === "Moderate") return "text-amber-600 bg-amber-50 border-amber-200";
+    return "text-rose-600 bg-rose-50 border-rose-200";
   };
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Perceived Stress Scale Quiz</h2>
-        <div>
-          <button onClick={startNewQuiz} className="mr-2 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">
-            New Quiz
-          </button>
-          <button onClick={fetchHistory} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">
-            View History
-          </button>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl mx-auto h-[80vh] flex flex-col">
+      <div className="mb-8 text-center shrink-0">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-100 mb-4">
+          <Zap className="w-8 h-8 text-rose-600" />
         </div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">Stress Assessment</h1>
+        <p className="text-slate-500">A quick 10-question check-in to measure your perceived stress levels over the last month.</p>
       </div>
-      {error && <p className="text-red-500 bg-red-100 p-2 mb-4 rounded">{error}</p>}
-      {view === 'new' && renderQuiz()}
-      {view === 'result' && renderResult()}
-      {view === 'history' && renderHistory()}
+
+      <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col relative min-h-[450px]">
+        
+        {/* Progress Bar Header */}
+        {currentStep < 10 && (
+          <div className="bg-slate-50 p-6 border-b border-slate-100 shrink-0">
+            <div className="flex justify-between text-sm font-bold text-slate-500 mb-3">
+              <span>Question {currentStep + 1} of 10</span>
+              <span>{Math.round(((currentStep) / 10) * 100)}%</span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+              <div 
+                className="bg-rose-500 h-full rounded-full transition-all duration-500 ease-out" 
+                style={{ width: `${((currentStep) / 10) * 100}%` }} 
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Question Area */}
+        {currentStep < 10 ? (
+          <div className="flex-1 p-6 md:p-10 flex flex-col">
+            <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-relaxed">
+              {PSS_QUESTIONS[currentStep].text}
+            </h2>
+
+            <div className="flex flex-col gap-3 mt-auto">
+              {OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleOptionSelect(opt.value)}
+                  className={`w-full text-left p-4 rounded-xl border-2 font-medium flex items-center justify-between transition-all group ${
+                    answers[currentStep] === opt.value
+                      ? "border-rose-500 bg-rose-50 text-rose-800 shadow-sm"
+                      : "border-slate-100 bg-white hover:border-rose-200 hover:bg-rose-50/50 text-slate-700"
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-2xl opacity-80 group-hover:opacity-100 transition-opacity">{opt.emoji}</span>
+                    <span className="text-lg">{opt.label}</span>
+                  </span>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    answers[currentStep] === opt.value ? "border-rose-500" : "border-slate-200"
+                  }`}>
+                    {answers[currentStep] === opt.value && <div className="w-3 h-3 rounded-full bg-rose-500" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation Footer */}
+            <div className="mt-8 flex justify-between items-center pt-6 border-t border-slate-100">
+              <button
+                onClick={() => setCurrentStep(prev => prev - 1)}
+                disabled={currentStep === 0 || isSubmitting}
+                className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center gap-2"
+              >
+                <ChevronLeft className="w-5 h-5" /> Back
+              </button>
+              
+              {currentStep === 9 ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={answers[9] === undefined || isSubmitting}
+                  className="px-8 py-3 rounded-xl font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "See Results"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setCurrentStep(prev => prev + 1)}
+                  disabled={answers[currentStep] === undefined}
+                  className="px-6 py-2.5 rounded-xl font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center gap-2"
+                >
+                  Skip / Next <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Results Area */
+          <div className="flex-1 p-6 md:p-10 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-500">
+            {result && (
+              <>
+                <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Your Results</h2>
+                
+                <div className={`w-40 h-40 rounded-full border-8 flex flex-col items-center justify-center mb-8 shadow-inner ${getResultColor(result.level)}`}>
+                  <span className="text-5xl font-black">{result.score}</span>
+                  <span className="text-sm font-bold opacity-70 mt-1">out of 40</span>
+                </div>
+
+                <div className={`px-6 py-2 rounded-full border-2 mb-8 ${getResultColor(result.level)}`}>
+                  <span className="text-lg font-black tracking-wide uppercase">{result.level} Stress</span>
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-6 md:p-8 max-w-lg mb-8 border border-slate-100">
+                  <p className="text-slate-700 font-medium leading-relaxed">
+                    {result.suggestions || "Take time to explore our resources page for structured coping strategies and techniques."}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                  <button
+                    onClick={() => {
+                      setAnswers({});
+                      setCurrentStep(0);
+                      setResult(null);
+                    }}
+                    className="flex-1 px-6 py-3 rounded-xl font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-5 h-5" /> Retake Quiz
+                  </button>
+                  <Link
+                    to="/resources"
+                    className="flex-1 px-6 py-3 rounded-xl font-bold bg-brand-600 text-white hover:bg-brand-700 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                  >
+                    View Resources <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

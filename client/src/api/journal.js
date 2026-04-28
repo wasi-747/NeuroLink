@@ -9,7 +9,7 @@ export const getEntries = async () => {
   }
 };
 
-export const addEntry = async (entryData) => {
+export const createEntry = async (entryData) => {
   try {
     const { data } = await api.post('/journal', entryData);
     return { data, error: null };
