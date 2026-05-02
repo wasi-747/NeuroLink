@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from transformers import pipeline
 import re
-from groq import Groq
+import httpx
 import os
 import json
 from dotenv import load_dotenv
@@ -12,20 +11,12 @@ load_dotenv()
 router = APIRouter()
 
 # --- Model Initialization ---
-# Hugging Face (Disabled to prevent startup hang from downloading model)
+# Hugging Face classifier disabled (would require torch/transformers)
 classifier = None
-# try:
-#     classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", return_all_scores=True)
-# except Exception as e:
-#     print(f"Warning: Hugging Face model failed to load: {e}")
-#     classifier = None
 
-# Groq
-try:
-    groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-except Exception as e:
-    print(f"Warning: Groq client failed to initialize: {e}")
-    groq_client = None
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 class SentimentRequest(BaseModel):
     text: str
@@ -39,9 +30,9 @@ CRISIS_KEYWORDS = [
 ]
 crisis_pattern = re.compile(r'\b(' + '|'.join(CRISIS_KEYWORDS) + r')\b', re.IGNORECASE)
 
-def analyze_with_groq_fallback(text: str):
-    """Uses Groq as a fallback for sentiment analysis."""
-    if not groq_client:
+async def analyze_with_groq_fallback(text: str):
+    """Uses Groq via HTTP as a fallback for sentiment analysis."""
+    if not GROQ_API_KEY:
         raise HTTPException(status_code=503, detail="All sentiment analysis services are unavailable.")
 
     prompt = f"""Analyze the sentiment of this text and return ONLY a valid JSON object with the specified keys:
@@ -55,22 +46,41 @@ Text: "{text}"
 
 Return ONLY the JSON object, no additional text."""
     try:
-        response = groq_client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.1,
-            max_tokens=100
-        )
-        
-        # Extract and parse the JSON response
-        json_text = response.choices[0].message.content.strip()
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                GROQ_API_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "max_tokens": 100,
+                },
+            )
+
+        if response.status_code != 200:
+            print(f"Groq API error: {response.status_code} {response.text[:300]}")
+            raise HTTPException(status_code=500, detail="Groq fallback sentiment analysis failed.")
+
+        data = response.json()
+        json_text = data["choices"][0]["message"]["content"].strip()
+        # Remove markdown code blocks if present
+        if json_text.startswith("```"):
+            json_text = re.sub(r'^```(?:json)?\s*', '', json_text)
+            json_text = re.sub(r'\s*```$', '', json_text)
         result = json.loads(json_text)
         # Add empty emotions dict to maintain consistent response structure
         result["emotions"] = {}
         return result
-    except Exception as e:
+    except httpx.HTTPError as e:
         print(f"Error calling Groq fallback API: {e}")
         raise HTTPException(status_code=500, detail="Groq fallback sentiment analysis failed.")
+    except json.JSONDecodeError as e:
+        print(f"Error parsing Groq response as JSON: {e}")
+        raise HTTPException(status_code=500, detail="Groq fallback sentiment analysis returned invalid JSON.")
 
 
 @router.post("/analyze/sentiment")
@@ -116,4 +126,4 @@ async def analyze_sentiment(request: SentimentRequest):
             # Fall through to Groq fallback
     
     # 3. If Hugging Face fails or is unavailable, use Groq
-    return analyze_with_groq_fallback(text_to_analyze)
+    return await analyze_with_groq_fallback(text_to_analyze)

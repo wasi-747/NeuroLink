@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
-from groq import Groq
+import httpx
 import os
 from dotenv import load_dotenv
 
@@ -9,12 +9,9 @@ load_dotenv()
 
 router = APIRouter()
 
-# Initialize the Groq client
-try:
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-except Exception as e:
-    print(f"Error initializing Groq client: {e}")
-    client = None
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 class ReportRequest(BaseModel):
     user_stats: Dict[str, Any]
@@ -37,12 +34,11 @@ Rules you MUST follow:
 
 @router.post("/analyze/weekly-report")
 async def generate_weekly_report(request: ReportRequest):
-    if not client:
+    if not GROQ_API_KEY:
         raise HTTPException(status_code=503, detail="AI report generation service is not available.")
 
     stats = request.user_stats
     
-    # Construct the user message for the prompt
     user_message = f"""Generate a weekly wellness report for a student with these stats:
 - Average mood score: {stats.get('avgMood', 'N/A')} (out of 5)
 - Mood trend: {stats.get('moodTrend', 'N/A')}
@@ -56,19 +52,32 @@ Please write the report based on these stats, following all the rules in the sys
 """
 
     try:
-        message = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            max_tokens=400,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ]
-        )
-        
-        report_text = message.choices[0].message.content
-        
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                GROQ_API_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "max_tokens": 400,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_message},
+                    ],
+                },
+            )
+
+        if response.status_code != 200:
+            print(f"Groq API error: {response.status_code} {response.text[:300]}")
+            raise HTTPException(status_code=500, detail="Failed to generate the wellness report.")
+
+        data = response.json()
+        report_text = data["choices"][0]["message"]["content"]
+
         return {"report": report_text}
 
-    except Exception as e:
+    except httpx.HTTPError as e:
         print(f"Error calling Groq API for weekly report: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate the wellness report.")

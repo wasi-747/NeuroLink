@@ -118,17 +118,28 @@ const server = app.listen(PORT, async () => {
   // Initialize cron jobs
   initCronJobs();
 
-  // Check ML service connection
+  // Check ML service connection (with retries for concurrent startup)
   if (process.env.ML_SERVICE_URL) {
-    try {
-      const response = await axios.get(`${process.env.ML_SERVICE_URL}/health`);
-      if (response.status === 200 && response.data.status === "ok") {
-        console.log("✅ ML service connected");
-      } else {
-        console.error("❌ ML service connection failed:", response.data);
+    const maxRetries = 5;
+    const retryDelay = 2000; // 2 seconds between retries
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await axios.get(`${process.env.ML_SERVICE_URL}/health`, { timeout: 5000 });
+        if (response.status === 200 && response.data.status === "ok") {
+          console.log("✅ ML service connected");
+          break;
+        } else {
+          console.error("❌ ML service connection failed:", response.data);
+        }
+      } catch (error) {
+        const errMsg = error.message || error.code || error.cause?.message || "Unknown error";
+        if (attempt < maxRetries) {
+          console.log(`⏳ ML service not ready yet (attempt ${attempt}/${maxRetries}: ${errMsg}), retrying in ${retryDelay / 1000}s...`);
+          await new Promise((r) => setTimeout(r, retryDelay));
+        } else {
+          console.error(`❌ ML service unavailable after ${maxRetries} retries: ${errMsg}`);
+        }
       }
-    } catch (error) {
-      console.error("❌ Error connecting to ML service:", error.message);
     }
   }
 });

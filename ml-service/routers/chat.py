@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from groq import Groq
+import httpx
 import os
 from dotenv import load_dotenv
 
@@ -9,12 +9,9 @@ load_dotenv()
 
 router = APIRouter()
 
-# Initialize the Groq client
-try:
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-except Exception as e:
-    print(f"Error initializing Groq client: {e}")
-    client = None
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]
@@ -36,27 +33,35 @@ Rules you MUST follow:
 
 @router.post("/chat")
 async def handle_chat(request: ChatRequest):
-    if not client:
-        raise HTTPException(status_code=503, detail="AI chat service is not available.")
-
-    # Convert messages from {"role": "user/assistant", "content": "..."} to {"role": "user/assistant", "content": "..."}
-    # Groq uses the same format as OpenAI
-    messages = request.messages
+    if not GROQ_API_KEY:
+        raise HTTPException(status_code=503, detail="AI chat service is not available. GROQ_API_KEY not set.")
 
     try:
-        # Prepend system prompt to messages
-        messages_with_system = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
-        
-        response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            max_tokens=250,
-            messages=messages_with_system
-        )
-        
-        reply = response.choices[0].message.content
-        
+        messages_with_system = [{"role": "system", "content": SYSTEM_PROMPT}] + request.messages
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                GROQ_API_URL,
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": GROQ_MODEL,
+                    "max_tokens": 250,
+                    "messages": messages_with_system,
+                },
+            )
+
+        if response.status_code != 200:
+            print(f"Groq API error: {response.status_code} {response.text[:300]}")
+            raise HTTPException(status_code=500, detail="Failed to get a response from the AI assistant.")
+
+        data = response.json()
+        reply = data["choices"][0]["message"]["content"]
+
         return {"reply": reply}
 
-    except Exception as e:
+    except httpx.HTTPError as e:
         print(f"Error calling Groq API: {e}")
         raise HTTPException(status_code=500, detail="Failed to get a response from the AI assistant.")
