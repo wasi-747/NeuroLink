@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import axios from "axios";
+import api from "../api/axios";
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -59,10 +59,7 @@ const Register = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || "/api/v1"}/auth/register`,
-        data,
-      );
+      const response = await api.post("/auth/register", data);
 
       if (response.data.success) {
         dispatch({ type: "LOGIN_SUCCESS", payload: response.data.user });
