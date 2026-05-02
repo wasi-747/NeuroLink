@@ -17,6 +17,11 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // Don't loop if we're already checking auth or on login page
+      if (originalRequest.url.includes("/auth/me") || window.location.pathname === "/login") {
+        return Promise.reject(error);
+      }
+
       try {
         // Silently call refresh token endpoint
         await axios.post(`${API_URL}/auth/refresh-token`, {}, { withCredentials: true });
@@ -24,8 +29,10 @@ axiosInstance.interceptors.response.use(
         // Retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
-        window.location.href = "/login";
+        // If refresh fails and we're not on login/register, redirect to login
+        if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }
