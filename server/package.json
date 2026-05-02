@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.5.0",
     "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^8.0.6",
     "unique-names-generator": "^4.7.1",
     "xss": "^1.0.15"
