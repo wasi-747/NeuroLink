@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { 
-  LayoutDashboard, 
-  Users, 
-  ShieldAlert, 
-  Stethoscope, 
-  BookOpen, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  ShieldAlert,
+  Stethoscope,
+  BookOpen,
+  FileText,
   LogOut,
   Menu,
   X,
-  BrainCircuit
+  BrainCircuit,
 } from "lucide-react";
 import axios from "axios";
 
@@ -44,14 +44,16 @@ const AdminLayout = () => {
     <div className="min-h-screen bg-slate-50 flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} flex flex-col`}
+      >
         {/* Brand */}
         <div className="h-20 flex items-center px-6 border-b border-slate-800 shrink-0">
           <Link to="/" className="flex items-center gap-3">
@@ -59,11 +61,18 @@ const AdminLayout = () => {
               <BrainCircuit className="h-6 w-6 text-brand-400" />
             </div>
             <div>
-              <span className="font-bold text-xl tracking-tight text-white block">NeuroLink</span>
-              <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">Admin Portal</span>
+              <span className="font-bold text-xl tracking-tight text-white block">
+                NeuroVerse
+              </span>
+              <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">
+                Admin Portal
+              </span>
             </div>
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden text-slate-400 hover:text-white">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="ml-auto lg:hidden text-slate-400 hover:text-white"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -79,12 +88,14 @@ const AdminLayout = () => {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${
-                  isActive 
-                    ? "bg-brand-600 text-white shadow-md shadow-brand-900/20" 
+                  isActive
+                    ? "bg-brand-600 text-white shadow-md shadow-brand-900/20"
                     : "hover:bg-slate-800 hover:text-white text-slate-400"
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? "text-brand-200" : "text-slate-500"}`} />
+                <Icon
+                  className={`w-5 h-5 ${isActive ? "text-brand-200" : "text-slate-500"}`}
+                />
                 {item.name}
               </Link>
             );
@@ -99,11 +110,15 @@ const AdminLayout = () => {
                 {user?.name?.charAt(0) || "A"}
               </div>
               <div className="truncate">
-                <div className="text-sm font-bold text-white truncate">{user?.name}</div>
-                <div className="text-xs font-medium text-slate-500 truncate">Administrator</div>
+                <div className="text-sm font-bold text-white truncate">
+                  {user?.name}
+                </div>
+                <div className="text-xs font-medium text-slate-500 truncate">
+                  Administrator
+                </div>
               </div>
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors shrink-0"
               title="Logout"
@@ -118,7 +133,7 @@ const AdminLayout = () => {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <header className="h-16 lg:hidden bg-white border-b border-slate-200 flex items-center px-4 shrink-0">
-          <button 
+          <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
           >

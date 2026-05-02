@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import xss from "xss";
 import path from "path";
 import cookieParser from "cookie-parser";
+import axios from "axios";
 
 import connectDB from "./config/db.js";
 
@@ -30,7 +31,12 @@ app.use(helmet());
 // Enable CORS
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:3001"],
+    origin: [
+      process.env.CLIENT_URL,
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+    ],
     credentials: true,
   }),
 );
@@ -41,8 +47,6 @@ const limiter = rateLimit({
   max: 1000, // limit each IP to 1000 requests per windowMs (increased to prevent dev lockouts)
 });
 app.use(limiter);
-
-
 
 // Prevent XSS attacks
 const sanitizeObject = (obj) => {
@@ -79,6 +83,12 @@ import resourceRoutes from "./routes/resource.js";
 import therapistRoutes from "./routes/therapist.js";
 import courseRoutes from "./routes/course.js";
 import adminRoutes from "./routes/admin.js";
+import mlRoutes from "./routes/ml.js";
+import wellnessReportRoutes from "./routes/wellnessReport.js";
+import learningRoutes from "./routes/learning.js";
+
+// Cron Jobs
+import { initCronJobs } from "./utils/cronJobs.js";
 
 // Middleware
 import errorHandler from "./middleware/error.js";
@@ -89,21 +99,39 @@ app.use("/api/v1/mood", moodRoutes);
 app.use("/api/v1/journal", journalRoutes);
 app.use("/api/v1/stress-quiz", stressQuizRoutes);
 app.use("/api/v1/habits", habitRoutes);
+app.use("/api/v1/learning", learningRoutes);
 app.use("/api/v1/gratitude", gratitudeRoutes);
 app.use("/api/v1/forum", forumRoutes);
 app.use("/api/v1/resources", resourceRoutes);
 app.use("/api/v1/therapists", therapistRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/ml", mlRoutes);
+app.use("/api/v1/wellness-reports", wellnessReportRoutes);
 
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(
-  PORT,
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`),
-);
+const server = app.listen(PORT, async () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  // Initialize cron jobs
+  initCronJobs();
+
+  // Check ML service connection
+  if (process.env.ML_SERVICE_URL) {
+    try {
+      const response = await axios.get(`${process.env.ML_SERVICE_URL}/health`);
+      if (response.status === 200 && response.data.status === "ok") {
+        console.log("✅ ML service connected");
+      } else {
+        console.error("❌ ML service connection failed:", response.data);
+      }
+    } catch (error) {
+      console.error("❌ Error connecting to ML service:", error.message);
+    }
+  }
+});
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err, promise) => {

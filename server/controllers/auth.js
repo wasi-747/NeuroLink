@@ -88,9 +88,12 @@ const sendTokenResponse = (user, statusCode, res) => {
     options.secure = true;
   }
 
+  const userData = user.toObject ? user.toObject() : user;
+  delete userData.password;
+
   res.status(statusCode).cookie("token", token, options).json({
     success: true,
     token,
-    user,
+    user: userData,
   });
 };

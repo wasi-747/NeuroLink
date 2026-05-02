@@ -1,89 +1,107 @@
-import React, { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
-
-const SCAN_STEPS = [
-  { part: "Toes & Feet", action: "Curl your toes tightly, holding for 5 seconds. Now release and feel the tension melt away." },
-  { part: "Calves", action: "Flex your feet upwards to tighten your calf muscles. Hold. Now release and relax." },
-  { part: "Thighs", action: "Squeeze your thigh muscles tightly. Hold for a moment. Let go completely." },
-  { part: "Stomach", action: "Draw your belly button in towards your spine. Hold it tight. Now let your stomach soften." },
-  { part: "Shoulders", action: "Pull your shoulders up to your ears. Hold the tension. Drop them down completely." },
-  { part: "Face", action: "Scrunch your face up tightly—eyes, mouth, nose. Hold. Now relax your jaw and let your face soften." },
-];
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Square, CheckCircle } from "lucide-react";
 
 const BodyScan = () => {
+  const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [completed, setCompleted] = useState(false);
 
-  const nextStep = () => {
-    if (currentStep < SCAN_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const steps = [
+    { title: "Settle In", text: "Find a comfortable position and close your eyes. Take a deep breath." },
+    { title: "Feet", text: "Focus your attention on your toes and feet. Notice any tension, and let it go." },
+    { title: "Legs", text: "Move your focus up to your calves, knees, and thighs. Allow them to feel heavy and relaxed." },
+    { title: "Hips & Core", text: "Notice your hips, lower back, and abdomen. Breathe into these areas to release tightness." },
+    { title: "Chest & Back", text: "Feel your chest rise and fall. Release any tension between your shoulder blades." },
+    { title: "Arms & Hands", text: "Let your shoulders drop. Relax your arms, wrists, and fingers completely." },
+    { title: "Neck & Jaw", text: "Unclench your jaw. Let your tongue fall from the roof of your mouth. Relax your neck." },
+    { title: "Head & Face", text: "Smooth your forehead. Relax your eyes. Feel a wave of calm over your entire body." },
+    { title: "Complete", text: "You have completed the body scan. Take one last deep breath and open your eyes." }
+  ];
+
+  useEffect(() => {
+    let timer;
+    if (isActive && currentStep < steps.length - 1) {
+      timer = setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+      }, 8000); // Advance every 8 seconds
+    } else if (currentStep === steps.length - 1) {
+      setIsActive(false); // Stop when complete
+    }
+    return () => clearTimeout(timer);
+  }, [isActive, currentStep, steps.length]);
+
+  const toggleExercise = () => {
+    if (isActive || currentStep === steps.length - 1) {
+      setIsActive(false);
+      setCurrentStep(0);
     } else {
-      setCompleted(true);
+      setIsActive(true);
     }
   };
 
-  const reset = () => {
-    setCurrentStep(0);
-    setCompleted(false);
-  };
-
-  if (completed) {
-    return (
-      <div className="text-center py-12 animate-in fade-in duration-500">
-        <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-10 h-10" />
-        </div>
-        <h3 className="text-3xl font-extrabold text-slate-800 mb-4">Body Scan Complete</h3>
-        <p className="text-slate-500 font-medium max-w-md mx-auto mb-8">
-          You have successfully released the physical tension stored in your body. Notice how much lighter you feel.
-        </p>
-        <button 
-          onClick={reset}
-          className="px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm"
-        >
-          Do it again
-        </button>
-      </div>
-    );
-  }
-
-  const step = SCAN_STEPS[currentStep];
+  const progress = (currentStep / (steps.length - 1)) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto py-8 text-center min-h-[300px] flex flex-col justify-center">
+    <div className="flex flex-col items-center justify-center py-8">
       
-      {/* Progress Bar */}
-      <div className="flex gap-2 mb-12 justify-center">
-        {SCAN_STEPS.map((s, idx) => (
-          <div 
-            key={idx} 
-            className={`h-2 w-12 rounded-full transition-colors duration-500 ${
-              idx < currentStep ? "bg-teal-400" : idx === currentStep ? "bg-teal-600" : "bg-slate-200"
-            }`}
-          />
-        ))}
-      </div>
-
-      <div key={currentStep} className="animate-in slide-in-from-right-8 fade-in duration-500">
-        <h2 className="text-sm font-bold text-teal-600 uppercase tracking-widest mb-2">
-          Focus on your
-        </h2>
-        <h3 className="text-4xl md:text-5xl font-black text-slate-800 mb-8">
-          {step.part}
-        </h3>
-        <p className="text-lg md:text-xl text-slate-600 font-medium mb-12 leading-relaxed">
-          {step.action}
-        </p>
+      <div className="w-full max-w-md bg-teal-50 rounded-3xl p-8 mb-12 shadow-sm border border-teal-100 relative overflow-hidden">
         
-        <button 
-          onClick={nextStep}
-          className="inline-flex items-center gap-3 px-8 py-4 bg-teal-600 text-white rounded-2xl font-bold text-lg hover:bg-teal-700 hover:shadow-lg transition-all"
-        >
-          {currentStep === SCAN_STEPS.length - 1 ? "Finish Scan" : "Next Part"}
-          <ArrowRight className="w-5 h-5" />
-        </button>
+        {/* Progress Bar Background */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-teal-100">
+          <motion.div 
+            className="h-full bg-teal-500"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+
+        <div className="text-center min-h-[160px] flex flex-col justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h3 className="text-2xl font-bold text-teal-800 mb-4">{steps[currentStep].title}</h3>
+              <p className="text-teal-900/80 text-lg leading-relaxed font-medium">
+                {steps[currentStep].text}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
+      <button
+        onClick={toggleExercise}
+        className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-md ${
+          isActive 
+            ? "bg-red-50 text-red-600 hover:bg-red-100" 
+            : currentStep === steps.length - 1 
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "bg-teal-600 text-white hover:bg-teal-700 hover:shadow-lg"
+        }`}
+      >
+        {isActive ? (
+          <>
+            <Square className="w-5 h-5 fill-current" /> Stop Scan
+          </>
+        ) : currentStep === steps.length - 1 ? (
+          <>
+            <CheckCircle className="w-5 h-5" /> Restart Scan
+          </>
+        ) : (
+          <>
+            <Play className="w-5 h-5 fill-current" /> Start Body Scan
+          </>
+        )}
+      </button>
+
+      <p className="mt-8 text-slate-500 text-center max-w-md font-medium">
+        This progressive muscle relaxation takes about 1 minute. Follow the prompts as they auto-advance.
+      </p>
     </div>
   );
 };

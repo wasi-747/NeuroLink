@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useContext, useEffect } from "react";
-import axios from "axios";
+import api from "../api/axios";
 
 const AuthContext = createContext();
 
@@ -40,13 +40,10 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set default axios configuration for credentials (cookies)
-  axios.defaults.withCredentials = true;
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/v1/auth/me");
+        const res = await api.get("/auth/me");
         if (res.data.success) {
           dispatch({ type: "USER_LOADED", payload: res.data.data });
         } else {

@@ -5,13 +5,23 @@ import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
-import { BrainCircuit, Mail, Lock, User, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  BrainCircuit,
+  Mail,
+  Lock,
+  User,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import axios from "axios";
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(6, { message: "Password must be exactly 6 characters." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be exactly 6 characters." }),
 });
 
 const calculateStrength = (pass) => {
@@ -49,15 +59,21 @@ const Register = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/v1/auth/register", data);
-      
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/auth/register",
+        data,
+      );
+
       if (response.data.success) {
         dispatch({ type: "LOGIN_SUCCESS", payload: response.data.user });
         toast.success("Account created! Let's start tracking.");
         navigate("/");
       }
     } catch (error) {
-      toast.error(error.response?.data?.error || "Registration failed. Try a different email.");
+      toast.error(
+        error.response?.data?.error ||
+          "Registration failed. Try a different email.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -71,20 +87,26 @@ const Register = () => {
       {/* Decorative Blob */}
       <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
       <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-purple-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-      
+
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl z-10 border border-slate-100 overflow-hidden relative backdrop-blur-sm bg-white/90 my-8">
         <div className="p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-100 mb-4">
               <BrainCircuit className="w-8 h-8 text-brand-600" />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Create Account</h2>
-            <p className="text-slate-500 mt-2 text-sm font-medium">Join NeuroLink for free</p>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              Create Account
+            </h2>
+            <p className="text-slate-500 mt-2 text-sm font-medium">
+              Join NeuroVerse for free
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Full Name
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-slate-400" />
@@ -92,15 +114,21 @@ const Register = () => {
                 <input
                   type="text"
                   {...register("name")}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.name ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-brand-500'} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.name ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-brand-500"} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="John Doe"
                 />
               </div>
-              {errors.name && <p className="mt-2 text-sm text-red-500 font-medium">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="mt-2 text-sm text-red-500 font-medium">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Email Address
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-slate-400" />
@@ -108,15 +136,21 @@ const Register = () => {
                 <input
                   type="email"
                   {...register("email")}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.email ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-brand-500'} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.email ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-brand-500"} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="name@student.edu"
                 />
               </div>
-              {errors.email && <p className="mt-2 text-sm text-red-500 font-medium">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="mt-2 text-sm text-red-500 font-medium">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Password
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-400" />
@@ -125,23 +159,36 @@ const Register = () => {
                   type="password"
                   {...register("password")}
                   onChange={(e) => setPasswordValue(e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.password ? 'border-red-300 focus:ring-red-500' : 'border-slate-200 focus:ring-brand-500'} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.password ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-brand-500"} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="••••••••"
                 />
               </div>
-              
+
               {/* Password Strength Meter */}
               <div className="mt-3">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-slate-500">Password strength:</span>
-                  <span className={`text-xs font-bold ${text !== 'None' ? color.replace('bg-', 'text-') : 'text-slate-400'}`}>{text}</span>
+                  <span className="text-xs font-medium text-slate-500">
+                    Password strength:
+                  </span>
+                  <span
+                    className={`text-xs font-bold ${text !== "None" ? color.replace("bg-", "text-") : "text-slate-400"}`}
+                  >
+                    {text}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden flex">
-                  <div className={`h-full ${color} transition-all duration-300`} style={{ width: `${Math.max(strength, 0)}%` }}></div>
+                  <div
+                    className={`h-full ${color} transition-all duration-300`}
+                    style={{ width: `${Math.max(strength, 0)}%` }}
+                  ></div>
                 </div>
               </div>
 
-              {errors.password && <p className="mt-2 text-sm text-red-500 font-medium">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-500 font-medium">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <button
@@ -162,7 +209,10 @@ const Register = () => {
 
           <p className="mt-8 text-center text-sm font-medium text-slate-600">
             Already have an account?{" "}
-            <Link to="/login" className="text-brand-600 hover:text-brand-700 font-semibold transition-colors">
+            <Link
+              to="/login"
+              className="text-brand-600 hover:text-brand-700 font-semibold transition-colors"
+            >
               Sign in
             </Link>
           </p>

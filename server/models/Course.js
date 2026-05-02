@@ -44,4 +44,7 @@ const CourseSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for better query performance
+CourseSchema.index({ category: 1, isPublished: 1 });
+
 export default mongoose.model("Course", CourseSchema);

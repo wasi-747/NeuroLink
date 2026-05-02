@@ -22,6 +22,10 @@ export const protect = asyncHandler(async (req, res, next) => {
 
     req.user = await User.findById(decoded.id);
 
+    if (!req.user) {
+      return next(new ErrorResponse('The user belonging to this token no longer exists', 401));
+    }
+
     next();
   } catch (err) {
     return next(new ErrorResponse('Not authorized to access this route', 401));

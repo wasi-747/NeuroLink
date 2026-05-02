@@ -38,10 +38,28 @@ const ForumPostSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        "Academic Pressure", "Exam Stress", "Anxiety", "Depression",
-        "Relationship Stress", "Family Issues", "Loneliness", "Sleep Problems",
-        "Self-Esteem", "General Support"
+        "Academic Pressure",
+        "Exam Stress",
+        "Anxiety",
+        "Depression",
+        "Relationship Stress",
+        "Family Issues",
+        "Loneliness",
+        "Sleep Problems",
+        "Self-Esteem",
+        "General Support",
       ],
+    },
+    sentimentLabel: {
+      type: String,
+      enum: ["POSITIVE", "NEUTRAL", "NEGATIVE", "CRISIS", "UNKNOWN"],
+      default: "UNKNOWN",
+    },
+    sentimentScore: {
+      type: Number,
+    },
+    emotions: {
+      type: Object,
     },
     reactions: [ReactionSchema],
     reportedBy: [
@@ -61,8 +79,11 @@ const ForumPostSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+// Indexes for better query performance
+ForumPostSchema.index({ category: 1, createdAt: -1 });
 
 // Virtual property to calculate total reaction counts
 ForumPostSchema.virtual("reactionCounts").get(function () {

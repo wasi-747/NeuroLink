@@ -84,4 +84,7 @@ const TherapistSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for better query performance
+TherapistSchema.index({ isVerified: 1 });
+
 export default mongoose.model("Therapist", TherapistSchema);

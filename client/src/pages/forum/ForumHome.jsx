@@ -5,11 +5,20 @@ import PostCard from "../../components/forum/PostCard";
 import CreatePostForm from "../../components/forum/CreatePostForm";
 import { toast } from "react-hot-toast";
 import { Loader2, Plus, Users, Filter, Ghost } from "lucide-react";
+import CrisisModal from "../../components/common/CrisisModal";
 
 const CATEGORIES = [
-  "All", "Academic Pressure", "Exam Stress", "Anxiety", "Depression",
-  "Relationship Stress", "Family Issues", "Loneliness", "Sleep Problems",
-  "Self-Esteem", "General Support"
+  "All",
+  "Academic Pressure",
+  "Exam Stress",
+  "Anxiety",
+  "Depression",
+  "Relationship Stress",
+  "Family Issues",
+  "Loneliness",
+  "Sleep Problems",
+  "Self-Esteem",
+  "General Support",
 ];
 
 const ForumHome = () => {
@@ -19,14 +28,15 @@ const ForumHome = () => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
 
   const fetchPosts = async (reset = false, currentCursor = cursor) => {
     try {
       const res = await getPosts(currentCursor, category);
       const newPosts = res.data.data;
-      
-      setPosts(prev => reset ? newPosts : [...prev, ...newPosts]);
-      
+
+      setPosts((prev) => (reset ? newPosts : [...prev, ...newPosts]));
+
       if (res.data.pagination.nextCursor) {
         setCursor(res.data.pagination.nextCursor);
         setHasNextPage(true);
@@ -54,7 +64,9 @@ const ForumHome = () => {
     }
   }, [hasNextPage, isInitialLoading, cursor, category]);
 
-  const [observerRef, isFetchingMore] = useInfiniteScroll(loadMore, { threshold: 0.1 });
+  const [observerRef, isFetchingMore] = useInfiniteScroll(loadMore, {
+    threshold: 0.1,
+  });
 
   const handleCreatePost = async (data) => {
     try {
@@ -62,12 +74,15 @@ const ForumHome = () => {
       toast.success("Post created successfully!");
       // Prepend to top if category matches or is All
       if (category === "All" || category === data.category) {
-        setPosts(prev => [res.data.data, ...prev]);
+        setPosts((prev) => [res.data.data, ...prev]);
       }
-      return true;
+      if (res.data.sentiment?.crisis_detected) {
+        setIsCrisisModalOpen(true);
+      }
+      return { success: true };
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to create post");
-      return false;
+      return { success: false };
     }
   };
 
@@ -75,7 +90,9 @@ const ForumHome = () => {
     try {
       // Optimistic update omitted for simplicity, but we replace the post in state
       const res = await reactToPost(postId, type);
-      setPosts(prev => prev.map(p => p._id === postId ? res.data.data : p));
+      setPosts((prev) =>
+        prev.map((p) => (p._id === postId ? res.data.data : p)),
+      );
     } catch (err) {
       toast.error("Failed to add reaction");
     }
@@ -87,7 +104,7 @@ const ForumHome = () => {
       await reportPost(postId, "Inappropriate Content");
       toast.success("Post reported to moderators.");
       // If the post hit the threshold, backend sets isHidden=true, so we can just remove it from UI
-      setPosts(prev => prev.filter(p => p._id !== postId)); 
+      setPosts((prev) => prev.filter((p) => p._id !== postId));
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to report post");
     }
@@ -95,6 +112,10 @@ const ForumHome = () => {
 
   return (
     <div className="max-w-5xl mx-auto pb-20">
+      <CrisisModal
+        isOpen={isCrisisModalOpen}
+        setIsOpen={setIsCrisisModalOpen}
+      />
       {/* Header Section */}
       <div className="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white mb-8 shadow-lg relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -105,7 +126,9 @@ const ForumHome = () => {
             Anonymous Community
           </h1>
           <p className="text-brand-100 text-lg md:text-xl font-medium leading-relaxed mb-8">
-            A safe, judgment-free space to share your experiences, ask for advice, and support fellow students. Your real identity is never revealed.
+            A safe, judgment-free space to share your experiences, ask for
+            advice, and support fellow students. Your real identity is never
+            revealed.
           </p>
           <button
             onClick={() => setIsCreateModalOpen(true)}
@@ -117,25 +140,32 @@ const ForumHome = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        
         {/* Main Feed */}
         <div className="flex-1 order-2 lg:order-1 min-w-0">
           {/* Mobile Filter Toggle (Optional/Future Enhancement) */}
           <div className="lg:hidden flex items-center gap-2 mb-4 p-4 bg-white rounded-2xl border border-slate-100 font-bold text-slate-700">
-            <Filter className="w-5 h-5 text-brand-500" /> Current Topic: {category}
+            <Filter className="w-5 h-5 text-brand-500" /> Current Topic:{" "}
+            {category}
           </div>
 
           <div className="space-y-4">
             {isInitialLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="w-10 h-10 animate-spin text-brand-500 mb-4" />
-                <p className="text-slate-500 font-medium">Loading community voices...</p>
+                <p className="text-slate-500 font-medium">
+                  Loading community voices...
+                </p>
               </div>
             ) : posts.length === 0 ? (
               <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
                 <Ghost className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-700 mb-2">It's quiet in here</h3>
-                <p className="text-slate-500 mb-6">There are no posts in this category yet. Be the first to start the discussion!</p>
+                <h3 className="text-xl font-bold text-slate-700 mb-2">
+                  It's quiet in here
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  There are no posts in this category yet. Be the first to start
+                  the discussion!
+                </p>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
                   className="bg-brand-100 text-brand-700 hover:bg-brand-200 font-bold px-6 py-3 rounded-xl transition-colors"
@@ -145,17 +175,31 @@ const ForumHome = () => {
               </div>
             ) : (
               <>
-                {posts.map(post => (
-                  <div key={post._id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <PostCard post={post} onReact={handleReact} onReport={handleReport} />
+                {posts.map((post) => (
+                  <div
+                    key={post._id}
+                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                  >
+                    <PostCard
+                      post={post}
+                      onReact={handleReact}
+                      onReport={handleReport}
+                    />
                   </div>
                 ))}
-                
+
                 {/* Infinite Scroll trigger area */}
-                <div ref={observerRef} className="h-20 flex items-center justify-center pt-8 pb-4">
-                  {isFetchingMore && <Loader2 className="w-6 h-6 animate-spin text-slate-400" />}
+                <div
+                  ref={observerRef}
+                  className="h-20 flex items-center justify-center pt-8 pb-4"
+                >
+                  {isFetchingMore && (
+                    <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                  )}
                   {!hasNextPage && posts.length > 0 && (
-                    <span className="text-sm font-semibold text-slate-400">You've reached the end of the line.</span>
+                    <span className="text-sm font-semibold text-slate-400">
+                      You've reached the end of the line.
+                    </span>
                   )}
                 </div>
               </>
@@ -170,7 +214,7 @@ const ForumHome = () => {
               <Filter className="w-5 h-5 text-brand-500" /> Topics
             </h3>
             <div className="flex flex-row lg:flex-col flex-wrap gap-2">
-              {CATEGORIES.map(cat => (
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
@@ -186,13 +230,12 @@ const ForumHome = () => {
             </div>
           </div>
         </div>
-
       </div>
 
-      <CreatePostForm 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-        onSubmit={handleCreatePost} 
+      <CreatePostForm
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreatePost}
       />
     </div>
   );

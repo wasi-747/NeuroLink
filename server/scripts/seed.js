@@ -6,6 +6,10 @@ import Course from "../models/Course.js";
 import Article from "../models/Article.js";
 import ForumPost from "../models/ForumPost.js";
 import Comment from "../models/Comment.js";
+import MoodEntry from "../models/MoodEntry.js";
+import HabitLog from "../models/HabitLog.js";
+import Habit from "../models/Habit.js";
+import GratitudeEntry from "../models/GratitudeEntry.js";
 import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator";
 
 // Load env vars
@@ -32,9 +36,13 @@ const seedDB = async () => {
     await Article.deleteMany();
     await ForumPost.deleteMany();
     await Comment.deleteMany();
+    await MoodEntry.deleteMany();
+    await Habit.deleteMany();
+    await HabitLog.deleteMany();
+    await GratitudeEntry.deleteMany();
 
     console.log("Creating Users...");
-    const users = await User.insertMany([
+    const users = await User.create([
       {
         name: "Admin User",
         email: "admin@neurolink.com",
@@ -218,6 +226,193 @@ const seedDB = async () => {
             ]
           }
         ]
+      },
+      {
+        title: "Anger Management Masterclass",
+        slug: "anger-management-masterclass",
+        description: "Learn to recognize triggers and build emotional control.",
+        instructor: { name: "Dr. Ahmed Khan", bio: "Counseling Psychologist" },
+        thumbnailGradient: "from-red-500 to-orange-600",
+        price: 799,
+        duration: 5,
+        lessonCount: 15,
+        level: "Beginner",
+        category: "Anger",
+        rating: 4.6,
+        enrollmentCount: 450,
+        tags: ["anger", "emotions", "control"],
+        whatYouWillLearn: ["Identify anger triggers", "De-escalate situations", "Communicate effectively"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Understanding Anger", order: 1, lessons: [
+              { title: "What is Anger?", duration: 15, type: "video", order: 1, isPreview: true },
+              { title: "Common Triggers", duration: 20, type: "video", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "Management Techniques", order: 2, lessons: [
+              { title: "The Pause Strategy", duration: 25, type: "video", order: 1, isPreview: false },
+              { title: "Reframing Thoughts", duration: 20, type: "video", order: 2, isPreview: false },
+              { title: "Journaling Exercise", duration: 10, type: "article", order: 3, isPreview: false }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Building Resilience & Mental Toughness",
+        slug: "building-resilience",
+        description: "Develop the mental fortitude to bounce back from setbacks.",
+        instructor: { name: "Dr. Sarah Jenkins", bio: "Clinical Psychologist" },
+        thumbnailGradient: "from-gray-700 to-gray-900",
+        price: 599,
+        duration: 4,
+        lessonCount: 10,
+        level: "Intermediate",
+        category: "Self-Care",
+        rating: 4.8,
+        enrollmentCount: 1200,
+        tags: ["resilience", "toughness", "growth"],
+        whatYouWillLearn: ["Bounce back from failure", "Maintain focus under pressure"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Foundations of Resilience", order: 1, lessons: [
+              { title: "Defining Resilience", duration: 20, type: "video", order: 1, isPreview: true },
+              { title: "The Growth Mindset", duration: 25, type: "video", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "Practical Applications", order: 2, lessons: [
+              { title: "Handling Rejection", duration: 20, type: "video", order: 1, isPreview: false },
+              { title: "Staying Motivated", duration: 20, type: "video", order: 2, isPreview: false }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Mindfulness & Meditation Fundamentals",
+        slug: "mindfulness-meditation-fundamentals",
+        description: "A practical guide to starting a daily meditation practice.",
+        instructor: { name: "Dr. Emily Chen", bio: "Psychiatrist" },
+        thumbnailGradient: "from-teal-400 to-emerald-600",
+        price: 399,
+        duration: 3.5,
+        lessonCount: 8,
+        level: "Beginner",
+        category: "Mindfulness",
+        rating: 4.9,
+        enrollmentCount: 2000,
+        tags: ["mindfulness", "meditation", "peace"],
+        whatYouWillLearn: ["Basic meditation postures", "Focusing on the breath", "Body scan techniques"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Getting Started", order: 1, lessons: [
+              { title: "What is Mindfulness?", duration: 15, type: "video", order: 1, isPreview: true },
+              { title: "Setting Up Your Space", duration: 10, type: "article", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "Core Practices", order: 2, lessons: [
+              { title: "Guided Breath Meditation", duration: 25, type: "video", order: 1, isPreview: false },
+              { title: "Walking Meditation", duration: 20, type: "video", order: 2, isPreview: false }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Relationships & Social Anxiety",
+        slug: "relationships-social-anxiety",
+        description: "Overcome the fear of judgment and build meaningful connections.",
+        instructor: { name: "Dr. Ahmed Khan", bio: "Counseling Psychologist" },
+        thumbnailGradient: "from-pink-500 to-rose-600",
+        price: 699,
+        duration: 4,
+        lessonCount: 12,
+        level: "Beginner",
+        category: "Relationships",
+        rating: 4.7,
+        enrollmentCount: 850,
+        tags: ["social-anxiety", "relationships", "communication"],
+        whatYouWillLearn: ["Identify social triggers", "Use exposure techniques safely", "Communicate boundaries"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Understanding Social Anxiety", order: 1, lessons: [
+              { title: "The Fear of Judgment", duration: 20, type: "video", order: 1, isPreview: true },
+              { title: "Safety Behaviors", duration: 15, type: "article", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "Building Connections", order: 2, lessons: [
+              { title: "Starting Conversations", duration: 25, type: "video", order: 1, isPreview: false },
+              { title: "Active Listening", duration: 20, type: "video", order: 2, isPreview: false }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Stress Management for Students",
+        slug: "stress-management-students",
+        description: "Practical tools for balancing academics, social life, and health.",
+        instructor: { name: "Dr. Sarah Jenkins", bio: "Clinical Psychologist" },
+        thumbnailGradient: "from-yellow-400 to-orange-500",
+        price: 499,
+        duration: 3,
+        lessonCount: 9,
+        level: "Beginner",
+        category: "Academic Stress",
+        rating: 4.8,
+        enrollmentCount: 1700,
+        tags: ["stress", "academics", "balance"],
+        whatYouWillLearn: ["Time management", "Prioritization", "Relaxation exercises"],
+        isPublished: true,
+        modules: [
+          {
+            title: "The Mechanics of Stress", order: 1, lessons: [
+              { title: "Good vs. Bad Stress", duration: 15, type: "video", order: 1, isPreview: true },
+              { title: "Physical Symptoms", duration: 15, type: "article", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "Management Strategies", order: 2, lessons: [
+              { title: "The Eisenhower Matrix", duration: 20, type: "video", order: 1, isPreview: false },
+              { title: "Saying No", duration: 15, type: "video", order: 2, isPreview: false }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Academic Burnout Recovery",
+        slug: "academic-burnout-recovery",
+        description: "How to recover your motivation when you feel completely exhausted.",
+        instructor: { name: "Dr. Emily Chen", bio: "Psychiatrist" },
+        thumbnailGradient: "from-cyan-500 to-blue-600",
+        price: 299,
+        duration: 2.5,
+        lessonCount: 7,
+        level: "Beginner",
+        category: "Academic Stress",
+        rating: 4.9,
+        enrollmentCount: 2200,
+        tags: ["burnout", "recovery", "motivation"],
+        whatYouWillLearn: ["Recognize burnout signs", "Restore energy levels", "Rebuild motivation slowly"],
+        isPublished: true,
+        modules: [
+          {
+            title: "Identifying Burnout", order: 1, lessons: [
+              { title: "Burnout vs. Laziness", duration: 20, type: "video", order: 1, isPreview: true },
+              { title: "The 5 Stages of Burnout", duration: 25, type: "video", order: 2, isPreview: false }
+            ]
+          },
+          {
+            title: "The Recovery Plan", order: 2, lessons: [
+              { title: "Radical Rest", duration: 20, type: "video", order: 1, isPreview: false },
+              { title: "Reintroducing Work", duration: 20, type: "video", order: 2, isPreview: false }
+            ]
+          }
+        ]
       }
     ]);
 
@@ -291,6 +486,65 @@ const seedDB = async () => {
       authorId: student1._id,
       anonymousAlias: student1.anonymousAlias
     });
+
+    console.log("Creating Trackers Data...");
+    // Generate dates for the past 30 days
+    const today = new Date();
+    const moodEntries = [];
+    const habitLogs = [];
+    const gratitudeEntries = [];
+    const studentIds = [student1._id, student2._id];
+
+    // Seed past 30 days Mood
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      moodEntries.push({
+        user: student1._id,
+        timestamp: d,
+        mood: Math.floor(Math.random() * 5) + 1,
+        note: "Just a seeded mood entry."
+      });
+      moodEntries.push({
+        user: student2._id,
+        timestamp: d,
+        mood: Math.floor(Math.random() * 5) + 1,
+        note: "Another seeded mood entry."
+      });
+    }
+
+    const habits = await Habit.insertMany([
+      { user: student1._id, name: "Drink Water", icon: "💧", isDefault: true },
+      { user: student2._id, name: "Read 10 mins", icon: "📚", isDefault: true }
+    ]);
+
+    // Seed past 14 days Habit
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      habitLogs.push({ user: student1._id, habit: habits[0]._id, date: d, completed: Math.random() > 0.3 });
+      habitLogs.push({ user: student2._id, habit: habits[1]._id, date: d, completed: Math.random() > 0.5 });
+    }
+
+    // Seed past 7 days Gratitude
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      gratitudeEntries.push({
+        user: student1._id,
+        date: d,
+        items: ["Family", "Health", "Studies"]
+      });
+      gratitudeEntries.push({
+        user: student2._id,
+        date: d,
+        items: ["Friends", "Food", "Sleep"]
+      });
+    }
+
+    await MoodEntry.insertMany(moodEntries);
+    await HabitLog.insertMany(habitLogs);
+    await GratitudeEntry.insertMany(gratitudeEntries);
 
     console.log("Data Seeding Completed Successfully!");
     process.exit(0);

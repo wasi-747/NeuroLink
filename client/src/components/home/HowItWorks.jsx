@@ -7,42 +7,52 @@ const HowItWorks = () => {
     {
       id: 1,
       title: "Sign Up Anonymously",
-      description: "Create an account using an alias. We don't require your real identity to access community features.",
+      description:
+        "Create an account using an alias. We don't require your real identity to access community features.",
       icon: UserCheck,
     },
     {
       id: 2,
       title: "Track & Connect",
-      description: "Use daily trackers to monitor your mood and connect with peers in the anonymous forum.",
+      description:
+        "Use daily trackers to monitor your mood and connect with peers in the anonymous forum.",
       icon: Activity,
     },
     {
       id: 3,
       title: "Get Professional Help",
-      description: "When you're ready, book a secure video session with a verified therapist or enroll in a course.",
+      description:
+        "When you're ready, book a secure video session with a verified therapist or enroll in a course.",
       icon: HeartHandshake,
-    }
+    },
   ];
 
   return (
     <div className="py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-20"
         >
-          <h2 className="text-brand-600 font-bold tracking-wider uppercase text-sm mb-3">Simple Process</h2>
-          <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">How NeuroLink Works</h3>
-          <p className="text-lg text-slate-500 font-medium">Getting started on your mental wellness journey is easier than you think.</p>
+          <h2 className="text-brand-600 font-bold tracking-wider uppercase text-sm mb-3">
+            Simple Process
+          </h2>
+          <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+            How NeuroVerse Works
+          </h3>
+          <p className="text-lg text-slate-500 font-medium">
+            Getting started on your mental wellness journey is easier than you
+            think.
+          </p>
         </motion.div>
 
         <div className="relative">
           {/* Desktop Connecting Line */}
           <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-1 bg-slate-100 rounded-full z-0">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: "100%" }}
               viewport={{ once: true }}
@@ -55,7 +65,7 @@ const HowItWorks = () => {
             {steps.map((step, idx) => {
               const Icon = step.icon;
               return (
-                <motion.div 
+                <motion.div
                   key={step.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -69,8 +79,12 @@ const HowItWorks = () => {
                   <div className="bg-brand-50 text-brand-600 font-black text-sm px-3 py-1 rounded-full mb-4 border border-brand-100">
                     Step {step.id}
                   </div>
-                  <h4 className="text-xl font-extrabold text-slate-900 mb-3">{step.title}</h4>
-                  <p className="text-slate-500 font-medium leading-relaxed max-w-xs">{step.description}</p>
+                  <h4 className="text-xl font-extrabold text-slate-900 mb-3">
+                    {step.title}
+                  </h4>
+                  <p className="text-slate-500 font-medium leading-relaxed max-w-xs">
+                    {step.description}
+                  </p>
                 </motion.div>
               );
             })}

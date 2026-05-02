@@ -46,4 +46,7 @@ const ArticleSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for better query performance
+ArticleSchema.index({ category: 1, isPublished: 1 });
+
 export default mongoose.model("Article", ArticleSchema);

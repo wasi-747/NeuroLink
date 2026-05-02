@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getCourses } from "../../api/course";
-import { Search, Loader2, Star, Clock, BookOpen, Filter, CheckCircle } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  Star,
+  Clock,
+  BookOpen,
+  Filter,
+  CheckCircle,
+} from "lucide-react";
 
 const CourseCatalog = () => {
   const [courses, setCourses] = useState([]);
@@ -24,7 +32,7 @@ const CourseCatalog = () => {
         setLoading(false);
       }
     };
-    
+
     // Debounce search slightly
     const timer = setTimeout(() => {
       fetchCourses();
@@ -39,11 +47,23 @@ const CourseCatalog = () => {
     <div className="max-w-7xl mx-auto px-4 py-12 animate-in fade-in duration-500">
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-          Wellness <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">Masterclasses</span>
+          Wellness{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">
+            Masterclasses
+          </span>
         </h1>
         <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-          Evidence-based courses to help you build resilience, manage stress, and thrive.
+          Evidence-based courses to help you build resilience, manage stress,
+          and thrive.
         </p>
+        <div className="mt-6">
+          <Link
+            to="/courses/learning-path"
+            className="inline-block bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            View Your Personalized Learning Path
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 mb-10">
@@ -59,16 +79,16 @@ const CourseCatalog = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <Filter className="w-5 h-5 text-slate-400 mr-2 shrink-0" />
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
               className={`px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all border-2 ${
-                category === cat 
-                  ? "bg-slate-900 border-slate-900 text-white shadow-md" 
+                category === cat
+                  ? "bg-slate-900 border-slate-900 text-white shadow-md"
                   : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
@@ -80,8 +100,11 @@ const CourseCatalog = () => {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-3xl h-[450px] shadow-sm border border-slate-100 overflow-hidden animate-pulse">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-3xl h-[450px] shadow-sm border border-slate-100 overflow-hidden animate-pulse"
+            >
               <div className="h-48 bg-slate-200" />
               <div className="p-6 space-y-4">
                 <div className="h-4 bg-slate-200 rounded w-1/4" />
@@ -95,15 +118,25 @@ const CourseCatalog = () => {
       ) : courses.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
           <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-slate-800 mb-2">No courses found</h3>
-          <p className="text-slate-500 font-medium">Try adjusting your search or category filter.</p>
+          <h3 className="text-2xl font-bold text-slate-800 mb-2">
+            No courses found
+          </h3>
+          <p className="text-slate-500 font-medium">
+            Try adjusting your search or category filter.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map(course => (
-            <Link key={course._id} to={`/courses/${course._id}`} className="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+          {courses.map((course) => (
+            <Link
+              key={course._id}
+              to={`/courses/${course._id}`}
+              className="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
               {/* Thumbnail */}
-              <div className={`h-48 bg-gradient-to-br ${course.thumbnailGradient} relative overflow-hidden shrink-0`}>
+              <div
+                className={`h-48 bg-gradient-to-br ${course.thumbnailGradient} relative overflow-hidden shrink-0`}
+              >
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800">
                   {course.level}
@@ -121,13 +154,18 @@ const CourseCatalog = () => {
               <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center gap-1 text-amber-500 mb-3">
                   <Star className="w-4 h-4 fill-current" />
-                  <span className="font-bold text-sm text-slate-700">{course.rating} <span className="text-slate-400 font-medium">({course.enrollmentCount})</span></span>
+                  <span className="font-bold text-sm text-slate-700">
+                    {course.rating}{" "}
+                    <span className="text-slate-400 font-medium">
+                      ({course.enrollmentCount})
+                    </span>
+                  </span>
                 </div>
-                
+
                 <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-2 group-hover:text-brand-600 transition-colors line-clamp-2">
                   {course.title}
                 </h3>
-                
+
                 <p className="text-slate-600 font-medium text-sm mb-6 line-clamp-2 flex-1">
                   {course.description}
                 </p>
@@ -137,7 +175,8 @@ const CourseCatalog = () => {
                     <Clock className="w-4 h-4" /> {course.duration}h
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4" /> {course.lessonCount} lessons
+                    <BookOpen className="w-4 h-4" /> {course.lessonCount}{" "}
+                    lessons
                   </div>
                 </div>
 
@@ -146,18 +185,26 @@ const CourseCatalog = () => {
                     <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                       {course.instructor.name.charAt(0)}
                     </div>
-                    <span className="text-sm font-semibold text-slate-700">{course.instructor.name}</span>
+                    <span className="text-sm font-semibold text-slate-700">
+                      {course.instructor.name}
+                    </span>
                   </div>
                   <div className="text-right">
                     {course.price > 0 ? (
                       <div className="flex flex-col">
                         {course.originalPrice && (
-                          <span className="text-xs text-slate-400 line-through font-semibold">৳{course.originalPrice}</span>
+                          <span className="text-xs text-slate-400 line-through font-semibold">
+                            ৳{course.originalPrice}
+                          </span>
                         )}
-                        <span className="text-lg font-black text-slate-900">৳{course.price}</span>
+                        <span className="text-lg font-black text-slate-900">
+                          ৳{course.price}
+                        </span>
                       </div>
                     ) : (
-                      <span className="text-lg font-black text-emerald-600">Free</span>
+                      <span className="text-lg font-black text-emerald-600">
+                        Free
+                      </span>
                     )}
                   </div>
                 </div>

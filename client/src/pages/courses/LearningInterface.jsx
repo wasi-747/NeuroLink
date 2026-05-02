@@ -3,7 +3,17 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { getEnrollmentStatus, completeLesson } from "../../api/course";
 import confetti from "canvas-confetti";
 import { toast } from "react-hot-toast";
-import { Loader2, ArrowLeft, PlayCircle, FileText, CheckCircle, Award, Check, Menu, X } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  PlayCircle,
+  FileText,
+  CheckCircle,
+  Award,
+  Check,
+  Menu,
+  X,
+} from "lucide-react";
 
 const LearningInterface = () => {
   const { id } = useParams();
@@ -24,22 +34,24 @@ const LearningInterface = () => {
           navigate(`/courses/${id}`);
           return;
         }
-        
+
         setEnrollment(res.data.enrollment);
-        
+
         // We get fullModules from the status endpoint to have the videos
         // But we need the course title etc. So we should fetch course details too if fullModules doesn't have it.
         // Actually, getEnrollmentStatus can just return the full course object. Let's assume it doesn't and we fetch getCourse.
-        const courseRes = await import("../../api/course").then(m => m.getCourse(id));
+        const courseRes = await import("../../api/course").then((m) =>
+          m.getCourse(id),
+        );
         const courseData = courseRes.data.data;
         courseData.modules = res.data.fullModules; // Inject full modules
-        
+
         setCourse(courseData);
-        
+
         // Auto-select first uncompleted lesson, or first lesson overall
         const completedIds = res.data.enrollment.completedLessons || [];
         let nextLesson = null;
-        
+
         for (const mod of courseData.modules) {
           for (const les of mod.lessons) {
             if (!completedIds.includes(les._id) && !nextLesson) {
@@ -47,12 +59,11 @@ const LearningInterface = () => {
             }
           }
         }
-        
+
         setCurrentLesson(nextLesson || courseData.modules[0].lessons[0]);
-        
+
         // On mobile, close sidebar by default
         if (window.innerWidth < 1024) setSidebarOpen(false);
-
       } catch (err) {
         toast.error("Error loading course environment");
         navigate("/courses");
@@ -65,7 +76,7 @@ const LearningInterface = () => {
 
   const handleCompleteLesson = async () => {
     if (!currentLesson || !enrollment) return;
-    
+
     // Prevent re-completing
     if (enrollment.completedLessons.includes(currentLesson._id)) {
       goToNextLesson();
@@ -75,11 +86,14 @@ const LearningInterface = () => {
     try {
       const res = await completeLesson(course._id, currentLesson._id);
       setEnrollment(res.data.data);
-      
+
       const newCompletedCount = res.data.data.completedLessons.length;
       if (newCompletedCount === course.lessonCount) {
         triggerConfetti();
-        toast.success("Congratulations! You've completed the course!", { duration: 5000, icon: '🎉' });
+        toast.success("Congratulations! You've completed the course!", {
+          duration: 5000,
+          icon: "🎉",
+        });
       } else {
         toast.success("Lesson completed!");
         goToNextLesson();
@@ -96,7 +110,7 @@ const LearningInterface = () => {
 
     const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-    const interval = setInterval(function() {
+    const interval = setInterval(function () {
       const timeLeft = animationEnd - Date.now();
 
       if (timeLeft <= 0) {
@@ -104,12 +118,18 @@ const LearningInterface = () => {
       }
 
       const particleCount = 50 * (timeLeft / duration);
-      confetti(Object.assign({}, defaults, { particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-      }));
-      confetti(Object.assign({}, defaults, { particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-      }));
+      confetti(
+        Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        }),
+      );
+      confetti(
+        Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        }),
+      );
     }, 250);
   };
 
@@ -166,7 +186,7 @@ const LearningInterface = () => {
         <body onload="window.print()">
           <div class="cert-container">
             <div class="cert-border-inner">
-              <div class="cert-logo">NEUROLINK WELLNESS</div>
+              <div class="cert-logo">NEUROVERSE WELLNESS</div>
               <div class="cert-title">CERTIFICATE</div>
               <div class="cert-subtitle">of Completion</div>
               
@@ -178,7 +198,7 @@ const LearningInterface = () => {
               
               <div class="cert-footer">
                 <div class="cert-sig-line">
-                  <div class="cert-date">${new Date(enrollment.completedAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                  <div class="cert-date">${new Date(enrollment.completedAt || Date.now()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
                   Date of Completion
                 </div>
                 <div class="cert-sig-line" style="font-family: 'Cinzel', serif; font-size: 20px; color: #0f172a; padding-top: 0; border-top: none; border-bottom: 1px solid #94a3b8; padding-bottom: 5px; margin-bottom: 5px;">
@@ -190,9 +210,9 @@ const LearningInterface = () => {
         </body>
       </html>
     `;
-    const blob = new Blob([html], { type: 'text/html' });
+    const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
   if (loading || !course || !enrollment) {
@@ -204,31 +224,44 @@ const LearningInterface = () => {
   }
 
   const completedCount = enrollment.completedLessons?.length || 0;
-  const progressPercent = Math.round((completedCount / course.lessonCount) * 100);
+  const progressPercent = Math.round(
+    (completedCount / course.lessonCount) * 100,
+  );
   const isCourseComplete = completedCount === course.lessonCount;
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden animate-in fade-in">
-      
       {/* Mobile Sidebar Overlay */}
       {!sidebarOpen && (
-        <button onClick={() => setSidebarOpen(true)} className="fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-xl shadow-lg lg:hidden">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-xl shadow-lg lg:hidden"
+        >
           <Menu className="w-6 h-6" />
         </button>
       )}
 
       {/* Sidebar (Bottom drawer on mobile, Left sidebar on desktop) */}
-      <div className={`fixed bottom-0 inset-x-0 z-40 w-full h-[60vh] bg-white border-t border-slate-200 transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:w-80 lg:h-full lg:border-t-0 lg:border-r lg:relative flex flex-col ${sidebarOpen ? 'translate-y-0 lg:translate-x-0' : 'translate-y-full lg:-translate-x-full lg:translate-y-0'}`}>
-        
+      <div
+        className={`fixed bottom-0 inset-x-0 z-40 w-full h-[60vh] bg-white border-t border-slate-200 transform transition-transform duration-300 ease-in-out lg:inset-y-0 lg:left-0 lg:w-80 lg:h-full lg:border-t-0 lg:border-r lg:relative flex flex-col ${sidebarOpen ? "translate-y-0 lg:translate-x-0" : "translate-y-full lg:-translate-x-full lg:translate-y-0"}`}
+      >
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-100 flex items-start justify-between shrink-0 bg-slate-50">
           <div>
-            <Link to={`/courses/${course._id}`} className="text-xs font-bold text-slate-400 hover:text-slate-700 flex items-center gap-1 mb-2">
+            <Link
+              to={`/courses/${course._id}`}
+              className="text-xs font-bold text-slate-400 hover:text-slate-700 flex items-center gap-1 mb-2"
+            >
               <ArrowLeft className="w-3 h-3" /> Back to course details
             </Link>
-            <h2 className="font-extrabold text-slate-900 leading-tight line-clamp-2">{course.title}</h2>
+            <h2 className="font-extrabold text-slate-900 leading-tight line-clamp-2">
+              {course.title}
+            </h2>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="p-1 lg:hidden text-slate-400 hover:text-slate-700">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-1 lg:hidden text-slate-400 hover:text-slate-700"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -237,10 +270,19 @@ const LearningInterface = () => {
         <div className="p-4 border-b border-slate-100 shrink-0">
           <div className="flex justify-between text-xs font-bold mb-2">
             <span className="text-slate-500">Your Progress</span>
-            <span className={isCourseComplete ? "text-emerald-500" : "text-brand-600"}>{progressPercent}%</span>
+            <span
+              className={
+                isCourseComplete ? "text-emerald-500" : "text-brand-600"
+              }
+            >
+              {progressPercent}%
+            </span>
           </div>
           <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-1000 ${isCourseComplete ? 'bg-emerald-500' : 'bg-brand-500'}`} style={{ width: `${progressPercent}%` }} />
+            <div
+              className={`h-full transition-all duration-1000 ${isCourseComplete ? "bg-emerald-500" : "bg-brand-500"}`}
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
           <div className="text-xs font-medium text-slate-400 mt-2">
             {completedCount} of {course.lessonCount} lessons completed
@@ -249,22 +291,29 @@ const LearningInterface = () => {
 
         {/* Lesson List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {course.modules.map(mod => (
+          {course.modules.map((mod) => (
             <div key={mod._id}>
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 pl-2">{mod.title}</h3>
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 pl-2">
+                {mod.title}
+              </h3>
               <div className="space-y-1">
                 {mod.lessons.map((lesson, idx) => {
-                  const isCompleted = enrollment.completedLessons.includes(lesson._id);
+                  const isCompleted = enrollment.completedLessons.includes(
+                    lesson._id,
+                  );
                   const isCurrent = currentLesson?._id === lesson._id;
-                  
+
                   return (
                     <button
                       key={lesson._id}
-                      onClick={() => { setCurrentLesson(lesson); if (window.innerWidth < 1024) setSidebarOpen(false); }}
+                      onClick={() => {
+                        setCurrentLesson(lesson);
+                        if (window.innerWidth < 1024) setSidebarOpen(false);
+                      }}
                       className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left ${
-                        isCurrent 
-                          ? 'bg-brand-50 border border-brand-100' 
-                          : 'hover:bg-slate-50 border border-transparent'
+                        isCurrent
+                          ? "bg-brand-50 border border-brand-100"
+                          : "hover:bg-slate-50 border border-transparent"
                       }`}
                     >
                       <div className="mt-0.5 shrink-0">
@@ -272,17 +321,25 @@ const LearningInterface = () => {
                           <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
                             <Check className="w-3 h-3 text-white stroke-[3]" />
                           </div>
-                        ) : lesson.type === 'video' ? (
-                          <PlayCircle className={`w-5 h-5 ${isCurrent ? 'text-brand-500' : 'text-slate-300'}`} />
+                        ) : lesson.type === "video" ? (
+                          <PlayCircle
+                            className={`w-5 h-5 ${isCurrent ? "text-brand-500" : "text-slate-300"}`}
+                          />
                         ) : (
-                          <FileText className={`w-5 h-5 ${isCurrent ? 'text-brand-500' : 'text-slate-300'}`} />
+                          <FileText
+                            className={`w-5 h-5 ${isCurrent ? "text-brand-500" : "text-slate-300"}`}
+                          />
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className={`text-sm font-semibold line-clamp-2 ${isCurrent ? 'text-brand-900' : isCompleted ? 'text-slate-600' : 'text-slate-700'}`}>
+                        <div
+                          className={`text-sm font-semibold line-clamp-2 ${isCurrent ? "text-brand-900" : isCompleted ? "text-slate-600" : "text-slate-700"}`}
+                        >
                           {idx + 1}. {lesson.title}
                         </div>
-                        <div className={`text-xs mt-1 ${isCurrent ? 'text-brand-500 font-medium' : 'text-slate-400 font-medium'}`}>
+                        <div
+                          className={`text-xs mt-1 ${isCurrent ? "text-brand-500 font-medium" : "text-slate-400 font-medium"}`}
+                        >
                           {lesson.duration} min
                         </div>
                       </div>
@@ -299,26 +356,26 @@ const LearningInterface = () => {
       <div className="flex-1 flex flex-col h-full bg-white relative">
         {/* Header Spacer for mobile */}
         {!sidebarOpen && <div className="h-16 lg:hidden bg-slate-900 w-full" />}
-        
+
         {/* Content Container */}
         <div className="flex-1 overflow-y-auto">
           {currentLesson ? (
             <div className="max-w-4xl mx-auto w-full h-full flex flex-col">
-              
               {/* Media Player / Reader */}
               <div className="w-full bg-black aspect-video relative flex-shrink-0">
                 {currentLesson.type === "video" && currentLesson.videoUrl ? (
-                  <iframe 
-                    src={currentLesson.videoUrl} 
+                  <iframe
+                    src={currentLesson.videoUrl}
                     className="absolute inset-0 w-full h-full"
-                    allowFullScreen 
+                    allowFullScreen
                     title={currentLesson.title}
                     frameBorder="0"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center p-8 bg-slate-50">
                     <div className="prose prose-slate max-w-none text-slate-700 font-medium leading-relaxed">
-                      {currentLesson.content || "Read the attached material here."}
+                      {currentLesson.content ||
+                        "Read the attached material here."}
                     </div>
                   </div>
                 )}
@@ -326,7 +383,9 @@ const LearningInterface = () => {
 
               {/* Lesson Details */}
               <div className="p-8 md:p-12 flex-1">
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-4">{currentLesson.title}</h1>
+                <h1 className="text-3xl font-extrabold text-slate-900 mb-4">
+                  {currentLesson.title}
+                </h1>
                 <p className="text-slate-500 font-medium flex items-center gap-2">
                   <Clock className="w-4 h-4" /> {currentLesson.duration} minutes
                 </p>
@@ -334,18 +393,20 @@ const LearningInterface = () => {
                 {/* Bottom Action Bar */}
                 <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                   {isCourseComplete ? (
-                    <button 
+                    <button
                       onClick={generateCertificate}
                       className="w-full sm:w-auto px-8 py-4 bg-amber-400 text-amber-900 rounded-xl font-black shadow-lg hover:bg-amber-300 transition-colors flex items-center justify-center gap-2"
                     >
                       <Award className="w-5 h-5" /> Download Certificate
                     </button>
                   ) : (
-                    <div className="text-sm font-bold text-slate-400 hidden sm:block">Keep going!</div>
+                    <div className="text-sm font-bold text-slate-400 hidden sm:block">
+                      Keep going!
+                    </div>
                   )}
 
                   {!enrollment.completedLessons.includes(currentLesson._id) ? (
-                    <button 
+                    <button
                       onClick={handleCompleteLesson}
                       className="w-full sm:w-auto px-8 py-4 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >

@@ -2,8 +2,13 @@ import ForumPost from "../models/ForumPost.js";
 import Comment from "../models/Comment.js";
 import Report from "../models/Report.js";
 import User from "../models/User.js";
-import { uniqueNamesGenerator, adjectives, animals } from "unique-names-generator";
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  animals,
+} from "unique-names-generator";
 import { Filter } from "bad-words";
+import axios from "axios";
 
 const filter = new Filter();
 
@@ -22,7 +27,7 @@ const getOrGenerateAlias = async (userId) => {
       length: 2,
     });
     newAlias = `${randomName}${Math.floor(Math.random() * 100)}`;
-    
+
     // Check collision
     const exists = await User.findOne({ anonymousAlias: newAlias });
     if (!exists) isUnique = true;
@@ -39,7 +44,7 @@ const getOrGenerateAlias = async (userId) => {
 export const getPosts = async (req, res) => {
   try {
     const { category, cursor, limit = 10 } = req.query;
-    
+
     let query = { isHidden: false };
     if (category && category !== "All") {
       query.category = category;
@@ -60,7 +65,7 @@ export const getPosts = async (req, res) => {
     res.status(200).json({
       success: true,
       data: results,
-      pagination: { nextCursor }
+      pagination: { nextCursor },
     });
   } catch (error) {
     res.status(500).json({ success: false, error: "Server Error" });
@@ -88,9 +93,14 @@ export const getPost = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const { title, content, category } = req.body;
-    
+
     if (filter.isProfane(title) || filter.isProfane(content)) {
-      return res.status(400).json({ success: false, error: "Content violates community guidelines." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Content violates community guidelines.",
+        });
     }
 
     const anonymousAlias = await getOrGenerateAlias(req.user.id);
@@ -100,10 +110,52 @@ export const createPost = async (req, res) => {
       anonymousAlias,
       title: filter.clean(title),
       content: filter.clean(content),
-      category
+      category,
     });
 
-    res.status(201).json({ success: true, data: post });
+    // Asynchronously call ML service for sentiment analysis
+    if (process.env.ML_SERVICE_URL) {
+      axios
+        .post(`${process.env.ML_SERVICE_URL}/analyze/sentiment`, {
+          text: content,
+          source: "forum",
+        })
+        .then((response) => {
+          const { sentiment, emotions, confidence } = response.data;
+          post.sentimentLabel = sentiment;
+          post.sentimentScore = confidence;
+          post.emotions = emotions;
+          post.save();
+        })
+        .catch((error) => {
+          console.error(
+            "Error calling ML service for forum post sentiment:",
+            error.message,
+          );
+        });
+    }
+
+    // We need to send the sentiment back to the client immediately for the crisis modal
+    let sentimentResponse = { crisis_detected: false };
+    try {
+      const mlResponse = await axios.post(
+        `${process.env.ML_SERVICE_URL}/analyze/sentiment`,
+        {
+          text: content,
+          source: "forum",
+        },
+      );
+      sentimentResponse = mlResponse.data;
+    } catch (error) {
+      console.error(
+        "Error calling ML service for immediate sentiment response:",
+        error.message,
+      );
+    }
+
+    res
+      .status(201)
+      .json({ success: true, data: post, sentiment: sentimentResponse });
   } catch (error) {
     res.status(500).json({ success: false, error: "Server Error" });
   }
@@ -116,14 +168,16 @@ export const reactToPost = async (req, res) => {
   try {
     const { type } = req.body;
     const post = await ForumPost.findById(req.params.id);
-    
+
     if (!post) {
       return res.status(404).json({ success: false, error: "Post not found" });
     }
 
     // Remove existing reaction by user if exists
-    post.reactions = post.reactions.filter(r => r.userId.toString() !== req.user.id);
-    
+    post.reactions = post.reactions.filter(
+      (r) => r.userId.toString() !== req.user.id,
+    );
+
     // Add new reaction
     post.reactions.push({ type, userId: req.user.id });
     await post.save();
@@ -144,7 +198,9 @@ export const unreactToPost = async (req, res) => {
       return res.status(404).json({ success: false, error: "Post not found" });
     }
 
-    post.reactions = post.reactions.filter(r => r.userId.toString() !== req.user.id);
+    post.reactions = post.reactions.filter(
+      (r) => r.userId.toString() !== req.user.id,
+    );
     await post.save();
 
     res.status(200).json({ success: true, data: post });
@@ -158,7 +214,10 @@ export const unreactToPost = async (req, res) => {
 // @access  Private
 export const getComments = async (req, res) => {
   try {
-    const comments = await Comment.find({ postId: req.params.id, isHidden: false }).sort({ createdAt: 1 });
+    const comments = await Comment.find({
+      postId: req.params.id,
+      isHidden: false,
+    }).sort({ createdAt: 1 });
     res.status(200).json({ success: true, data: comments });
   } catch (error) {
     res.status(500).json({ success: false, error: "Server Error" });
@@ -171,9 +230,14 @@ export const getComments = async (req, res) => {
 export const addComment = async (req, res) => {
   try {
     const { content, parentId } = req.body;
-    
+
     if (filter.isProfane(content)) {
-      return res.status(400).json({ success: false, error: "Content violates community guidelines." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Content violates community guidelines.",
+        });
     }
 
     const anonymousAlias = await getOrGenerateAlias(req.user.id);
@@ -183,11 +247,13 @@ export const addComment = async (req, res) => {
       authorId: req.user.id,
       anonymousAlias,
       content: filter.clean(content),
-      parentId: parentId || null
+      parentId: parentId || null,
     });
 
     // Increment post comment count
-    await ForumPost.findByIdAndUpdate(req.params.id, { $inc: { commentCount: 1 } });
+    await ForumPost.findByIdAndUpdate(req.params.id, {
+      $inc: { commentCount: 1 },
+    });
 
     res.status(201).json({ success: true, data: comment });
   } catch (error) {
@@ -202,12 +268,16 @@ export const reactToComment = async (req, res) => {
   try {
     const { type } = req.body;
     const comment = await Comment.findById(req.params.id);
-    
+
     if (!comment) {
-      return res.status(404).json({ success: false, error: "Comment not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Comment not found" });
     }
 
-    comment.reactions = comment.reactions.filter(r => r.userId.toString() !== req.user.id);
+    comment.reactions = comment.reactions.filter(
+      (r) => r.userId.toString() !== req.user.id,
+    );
     comment.reactions.push({ type, userId: req.user.id });
     await comment.save();
 
@@ -224,18 +294,20 @@ export const reportPost = async (req, res) => {
   try {
     const { reason } = req.body;
     const post = await ForumPost.findById(req.params.id);
-    
+
     if (!post) {
       return res.status(404).json({ success: false, error: "Post not found" });
     }
 
     // Check if user already reported
     if (post.reportedBy.includes(req.user.id)) {
-      return res.status(400).json({ success: false, error: "You already reported this post" });
+      return res
+        .status(400)
+        .json({ success: false, error: "You already reported this post" });
     }
 
     post.reportedBy.push(req.user.id);
-    
+
     // Auto-hide if 3+ reports
     if (post.reportedBy.length >= 3) {
       post.isHidden = true;
@@ -246,10 +318,12 @@ export const reportPost = async (req, res) => {
       contentType: "post",
       contentId: post._id,
       reportedBy: req.user.id,
-      reason
+      reason,
     });
 
-    res.status(200).json({ success: true, message: "Post reported successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Post reported successfully" });
   } catch (error) {
     res.status(500).json({ success: false, error: "Server Error" });
   }

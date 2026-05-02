@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import BreathingExercise from "../../components/resources/BreathingExercise";
 import BodyScan from "../../components/resources/BodyScan";
 import Grounding from "../../components/resources/Grounding";
-import { Wind, Activity, Eye } from "lucide-react";
+import BoxBreathing from "../../components/resources/BoxBreathing";
+import { Wind, Activity, Eye, Square } from "lucide-react";
 
 const ToolsTab = () => {
   const [activeTool, setActiveTool] = useState(null);
@@ -16,6 +17,15 @@ const ToolsTab = () => {
       color: "from-sky-400 to-blue-500",
       bg: "bg-blue-50",
       component: <BreathingExercise />
+    },
+    {
+      id: "box",
+      title: "Box Breathing",
+      description: "Equal-ratio breathing to regain focus and calm the nervous system.",
+      icon: Square,
+      color: "from-indigo-400 to-purple-500",
+      bg: "bg-indigo-50",
+      component: <BoxBreathing />
     },
     {
       id: "scan",
