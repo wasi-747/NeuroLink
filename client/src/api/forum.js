@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Using the same axios instance/base pattern assumed for the rest of the app
-const API_URL = "http://localhost:5000/api/v1/forum";
+const API_URL = `${import.meta.env.VITE_API_URL || "/api/v1"}/forum`;
 
 // Axios instance with interceptors for auth if they exist globally, 
 // otherwise we pass withCredentials (assuming cookies or headers are handled)

@@ -23,7 +23,7 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5000/api/v1/auth/logout");
+      await axios.get(`${import.meta.env.VITE_API_URL || "/api/v1"}/auth/logout`);
     } catch (err) {
       console.error(err);
     }
