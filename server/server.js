@@ -29,16 +29,23 @@ app.use(cookieParser());
 app.use(helmet());
 
 // Enable CORS
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        process.env.CLIENT_URL,
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+      ].filter(Boolean);
+
+      // Allow if origin is in allowedOrigins or if it's a Vercel URL
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
