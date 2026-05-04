@@ -40,7 +40,11 @@ app.use(
       ].filter(Boolean);
 
       // Allow if origin is in allowedOrigins or if it's a Vercel URL
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -103,6 +107,9 @@ import { initCronJobs } from "./utils/cronJobs.js";
 import errorHandler from "./middleware/error.js";
 
 // Mount routers
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date() });
+});
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/mood", moodRoutes);
 app.use("/api/v1/journal", journalRoutes);
@@ -127,13 +134,42 @@ const server = app.listen(PORT, async () => {
   // Initialize cron jobs
   initCronJobs();
 
+  // Keep-alive ping
+  const keepAlive = () => {
+    setInterval(
+      async () => {
+        try {
+          // Ping ML service if URL is defined
+          if (process.env.ML_SERVICE_URL) {
+            await axios.get(process.env.ML_SERVICE_URL + "/health");
+          }
+          // Ping backend service if URL is defined
+          if (process.env.BACKEND_URL) {
+            await axios.get(process.env.BACKEND_URL + "/api/health");
+          }
+          console.log("Keep-alive ping sent");
+        } catch (err) {
+          console.log("Keep-alive failed:", err.message);
+        }
+      },
+      14 * 60 * 1000,
+    ); // every 14 minutes
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    keepAlive();
+  }
+
   // Check ML service connection (with retries for concurrent startup)
   if (process.env.ML_SERVICE_URL) {
     const maxRetries = 5;
     const retryDelay = 2000; // 2 seconds between retries
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const response = await axios.get(`${process.env.ML_SERVICE_URL}/health`, { timeout: 5000 });
+        const response = await axios.get(
+          `${process.env.ML_SERVICE_URL}/health`,
+          { timeout: 5000 },
+        );
         if (response.status === 200 && response.data.status === "ok") {
           console.log("✅ ML service connected");
           break;
@@ -141,12 +177,20 @@ const server = app.listen(PORT, async () => {
           console.error("❌ ML service connection failed:", response.data);
         }
       } catch (error) {
-        const errMsg = error.message || error.code || error.cause?.message || "Unknown error";
+        const errMsg =
+          error.message ||
+          error.code ||
+          error.cause?.message ||
+          "Unknown error";
         if (attempt < maxRetries) {
-          console.log(`⏳ ML service not ready yet (attempt ${attempt}/${maxRetries}: ${errMsg}), retrying in ${retryDelay / 1000}s...`);
+          console.log(
+            `⏳ ML service not ready yet (attempt ${attempt}/${maxRetries}: ${errMsg}), retrying in ${retryDelay / 1000}s...`,
+          );
           await new Promise((r) => setTimeout(r, retryDelay));
         } else {
-          console.error(`❌ ML service unavailable after ${maxRetries} retries: ${errMsg}`);
+          console.error(
+            `❌ ML service unavailable after ${maxRetries} retries: ${errMsg}`,
+          );
         }
       }
     }
