@@ -225,7 +225,8 @@ export const proxyChat = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const response = await axios.post(`${process.env.ML_SERVICE_URL}/chat`, {
+    const response = await axios.post(
+      `${process.env.ML_SERVICE_URL}/api/ml/chat`,
       messages,
       user_context,
     });
