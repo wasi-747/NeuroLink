@@ -231,7 +231,7 @@ export const proxyChat = asyncHandler(async (req, res, next) => {
         messages,
         user_context,
       },
-    });
+    );
 
     res.status(200).json(response.data);
   } catch (error) {
