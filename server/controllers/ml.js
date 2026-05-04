@@ -232,7 +232,7 @@ export const proxyChat = asyncHandler(async (req, res, next) => {
         user_context,
       },
       {
-        timeout: 30000, // 30-second timeout
+        timeout: 60000, // 60-second timeout
       },
     );
 
