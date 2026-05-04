@@ -231,6 +231,9 @@ export const proxyChat = asyncHandler(async (req, res, next) => {
         messages,
         user_context,
       },
+      {
+        timeout: 30000, // 30-second timeout
+      },
     );
 
     res.status(200).json(response.data);
