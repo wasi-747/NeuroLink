@@ -51,13 +51,13 @@ The platform utilizes a **Hybrid API-DSA Architecture**, separating the web-faci
 
 The platform utilizes 5 primary datasets stored in `ml-service/Datasets/Datasets CSV/` to drive the intelligence features:
 
-| Dataset File | Size (Rows × Columns) | Core Purpose | Key Features | Preprocessing Applied |
+| Dataset File & Citation | Size (Rows × Columns) | Core Purpose | Key Features | Preprocessing Applied |
 | :--- | :--- | :--- | :--- | :--- |
-| **`Student Mental health.csv`** | 101 × 11 | Mood Prediction Model | `Age`, `Choose your gender`, `Your current year of Study`, `What is your CGPA?`, `Do you have Depression?`, `Do you have Anxiety?`, `Do you have Panic attack?` | Mapping categorical answers to numeric encodings, computing continuous target `mood_score`, and applying `StandardScaler` normalization. |
-| **`Combined Data.csv`** | 53,043 × 3 | Sentiment Classifier | `statement`, `status` | Column renaming, mapping clinical diagnoses into three unified sentiment classes, and lowercase regex filtering. |
-| **`mental_health.csv`** | 27,977 × 2 | Sentiment Classifier (Crisis) | `text`, `label` | Mapping binary targets (`0` $\rightarrow$ `NEUTRAL`, `1` $\rightarrow$ `CRISIS`), combined with `Combined Data.csv`, and vectorized. |
-| **`Sleep_health_and_lifestyle_dataset.csv`** | 374 × 13 | Sleep Insights & Analytics | `Sleep Duration`, `Quality of Sleep`, `Stress Level`, `Occupation`, `Sleep Disorder` | Imputing missing categorical values (filling null `Sleep Disorder` values with `'None'`), computing Pearson correlations, and extracting threshold rules. |
-| **`Mental_Health_FAQ.csv`** | 98 × 3 | FAQ Knowledge Base | `Question_ID`, `Questions`, `Answers` | Lowercasing, symbol stripping, stopword filtering, and indexing. |
+| **`Student Mental health.csv`**<br>_Title:_ A Statistical Research on the Effects of Mental Health on Students' CGPA<br>_Author:_ MD Shariful Islam | 101 × 11 | Mood Prediction Model | `Age`, `Choose your gender`, `Your current year of Study`, `What is your CGPA?`, `Do you have Depression?`, `Do you have Anxiety?`, `Do you have Panic attack?` | Mapping categorical answers to numeric encodings, computing continuous target `mood_score`, and applying `StandardScaler` normalization. |
+| **`Combined Data.csv`**<br>_Title:_ Sentiment Analysis for Mental Health<br>_Author:_ Suchintika Sarkar | 53,043 × 3 | Sentiment Classifier | `statement`, `status` | Column renaming, mapping clinical diagnoses into three unified sentiment classes, and lowercase regex filtering. |
+| **`mental_health.csv`**<br>_Title:_ Mental Health Corpus<br>_Author:_ Reihaneh Namdari | 27,977 × 2 | Sentiment Classifier (Crisis) | `text`, `label` | Mapping binary targets (`0` $\rightarrow$ `NEUTRAL`, `1` $\rightarrow$ `CRISIS`), combined with `Combined Data.csv`, and vectorized. |
+| **`Sleep_health_and_lifestyle_dataset.csv`**<br>_Title:_ Sleep Health and Lifestyle Dataset (Synthetic)<br>_Author:_ Laksika Tharmalingam | 374 × 13 | Sleep Insights & Analytics | `Sleep Duration`, `Quality of Sleep`, `Stress Level`, `Occupation`, `Sleep Disorder` | Imputing missing categorical values (filling null `Sleep Disorder` values with `'None'`), computing Pearson correlations, and extracting threshold rules. |
+| **`Mental_Health_FAQ.csv`**<br>_Title:_ Mental Health FAQ for Chatbot<br>_Author:_ tolu07 | 98 × 3 | FAQ Knowledge Base | `Question_ID`, `Questions`, `Answers` | Lowercasing, symbol stripping, stopword filtering, and indexing. |
 
 ### Resolving Row and Column Mismatch in Sentiment Datasets
 A primary challenge was combining `Combined Data.csv` (53,043 rows, 3 cols) and `mental_health.csv` (27,977 rows, 2 cols), which had completely mismatched formats.

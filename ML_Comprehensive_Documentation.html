@@ -844,7 +844,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Dataset Source File</th>
+                            <th>Dataset File &amp; Citation</th>
                             <th>Size (Rows × Columns)</th>
                             <th>Model Purpose</th>
                             <th>Key Columns Used</th>
@@ -853,35 +853,65 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong><code>Student Mental health.csv</code></strong></td>
+                            <td>
+                                <strong><code>Student Mental health.csv</code></strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-tertiary);">
+                                    <b>Title:</b> A Statistical Research on the Effects of Mental Health on Students' CGPA<br>
+                                    <b>Author:</b> MD Shariful Islam
+                                </span>
+                            </td>
                             <td>101 × 11</td>
                             <td>Mood Prediction Model</td>
                             <td><code>Age</code>, <code>Choose your gender</code>, <code>Your current year of Study</code>, <code>What is your CGPA?</code>, <code>Do you have Depression?</code>, <code>Do you have Anxiety?</code>, <code>Do you have Panic attack?</code></td>
                             <td>Categorical mapping, mathematical derivation of continuous <code>mood_score</code> target, and <code>StandardScaler</code> normalization.</td>
                         </tr>
                         <tr>
-                            <td><strong><code>Combined Data.csv</code></strong></td>
+                            <td>
+                                <strong><code>Combined Data.csv</code></strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-tertiary);">
+                                    <b>Title:</b> Sentiment Analysis for Mental Health<br>
+                                    <b>Author:</b> Suchintika Sarkar
+                                </span>
+                            </td>
                             <td>53,043 × 3</td>
                             <td>Sentiment Classifier</td>
                             <td><code>statement</code>, <code>status</code></td>
                             <td>Renamed columns, mapped categorical labels to <code>NEUTRAL</code>, <code>NEGATIVE</code>, <code>CRISIS</code>, lowercase conversion, noise character removal, and TF-IDF Vectorization.</td>
                         </tr>
                         <tr>
-                            <td><strong><code>mental_health.csv</code></strong></td>
+                            <td>
+                                <strong><code>mental_health.csv</code></strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-tertiary);">
+                                    <b>Title:</b> Mental Health Corpus<br>
+                                    <b>Author:</b> Reihaneh Namdari
+                                </span>
+                            </td>
                             <td>27,977 × 2</td>
                             <td>Sentiment Classifier (Crisis)</td>
                             <td><code>text</code>, <code>label</code></td>
                             <td>Label encoding (0 $\rightarrow$ <code>NEUTRAL</code>, 1 $\rightarrow$ <code>CRISIS</code>), lowercase conversion, token normalization, and TF-IDF Vectorization.</td>
                         </tr>
                         <tr>
-                            <td><strong><code>Sleep_health_and_lifestyle_dataset.csv</code></strong></td>
+                            <td>
+                                <strong><code>Sleep_health_and_lifestyle_dataset.csv</code></strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-tertiary);">
+                                    <b>Title:</b> Sleep Health and Lifestyle Dataset (Synthetic)<br>
+                                    <b>Author:</b> Laksika Tharmalingam
+                                </span>
+                            </td>
                             <td>374 × 13</td>
                             <td>Sleep Insights &amp; Analytics</td>
                             <td><code>Sleep Duration</code>, <code>Quality of Sleep</code>, <code>Stress Level</code>, <code>Occupation</code>, <code>Sleep Disorder</code></td>
                             <td>Missing value imputation (filled null values in <code>Sleep Disorder</code> with <code>'None'</code>), Pearson correlation matrix extraction, and rule-based threshold extraction.</td>
                         </tr>
                         <tr>
-                            <td><strong><code>Mental_Health_FAQ.csv</code></strong></td>
+                            <td>
+                                <strong><code>Mental_Health_FAQ.csv</code></strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-tertiary);">
+                                    <b>Title:</b> Mental Health FAQ for Chatbot<br>
+                                    <b>Author:</b> tolu07
+                                </span>
+                            </td>
                             <td>98 × 3</td>
                             <td>FAQ Knowledge Base</td>
                             <td><code>Question_ID</code>, <code>Questions</code>, <code>Answers</code></td>
