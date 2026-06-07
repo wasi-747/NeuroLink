@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k -n server,client,ml -c blue,green,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"cd ml-service && python -m uvicorn main:app --host 127.0.0.1 --port 8000\"",
+    "dev": "concurrently -k -n server,client,ml -c blue,green,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"cd ml-service && python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload\"",
     "server": "npm run dev --prefix server",
     "client": "npm run dev --prefix client",
-    "ml": "cd ml-service && python -m uvicorn main:app --host 127.0.0.1 --port 8000",
+    "ml": "cd ml-service && python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload",
     "seed": "npm run seed --prefix server"
   },
   "dependencies": {

@@ -39,11 +39,26 @@ app.use(
         "http://localhost:3002",
       ].filter(Boolean);
 
+      const isLocalDevOrigin = (value) => {
+        if (!value || process.env.NODE_ENV === "production") return false;
+
+        try {
+          const parsed = new URL(value);
+          return (
+            parsed.protocol === "http:" &&
+            ["localhost", "127.0.0.1", "::1"].includes(parsed.hostname)
+          );
+        } catch {
+          return false;
+        }
+      };
+
       // Allow if origin is in allowedOrigins or if it's a Vercel URL
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
+        origin.endsWith(".vercel.app") ||
+        isLocalDevOrigin(origin)
       ) {
         callback(null, true);
       } else {

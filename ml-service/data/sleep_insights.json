@@ -1,0 +1,60 @@
+{
+  "low_sleep": {
+    "threshold": 6.0,
+    "recommendations": {
+      "articles": [
+        "sleep hygiene",
+        "insomnia tips"
+      ],
+      "courses": [
+        "Sleep Better Perform Better"
+      ],
+      "tools": [
+        "4-7-8 Breathing",
+        "Body Scan"
+      ],
+      "habits": [
+        "sleep 8 hours",
+        "no screens 1hr before bed"
+      ]
+    }
+  },
+  "high_stress": {
+    "threshold": 7,
+    "recommendations": {
+      "articles": [
+        "stress management",
+        "exam anxiety"
+      ],
+      "courses": [
+        "Stress Management for Students"
+      ],
+      "tools": [
+        "Box Breathing",
+        "5-4-3-2-1 Grounding"
+      ],
+      "habits": [
+        "meditation 10min",
+        "exercise 30min"
+      ]
+    }
+  },
+  "poor_sleep_quality": {
+    "threshold": 5,
+    "recommendations": {
+      "articles": [
+        "sleep quality tips"
+      ],
+      "courses": [
+        "Mindfulness Meditation"
+      ],
+      "tools": [
+        "4-7-8 Breathing"
+      ],
+      "habits": [
+        "meditation 10min",
+        "no caffeine after 2pm"
+      ]
+    }
+  }
+}

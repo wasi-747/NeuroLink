@@ -3,8 +3,10 @@ import {
   Routes,
   Route,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/layout/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -42,10 +44,29 @@ import AdminArticles from "./pages/admin/AdminArticles";
 
 import EmergencyRibbon from "./components/layout/EmergencyRibbon";
 import ChatWidget from "./components/layout/ChatWidget";
+import Footer from "./components/layout/Footer";
 
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import "./App.css";
+
+function AnimatedMain() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.25 }}
+        className="flex-grow"
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 function App() {
   return (
@@ -55,12 +76,11 @@ function App() {
         <Routes>
           <Route
             element={
-              <div className="min-h-screen flex flex-col bg-slate-50">
+              <div className="min-h-screen flex flex-col bg-cream">
                 <EmergencyRibbon />
                 <Navbar />
-                <main className="flex-grow">
-                  <Outlet />
-                </main>
+                <AnimatedMain />
+                <Footer />
                 <ChatWidget />
               </div>
             }

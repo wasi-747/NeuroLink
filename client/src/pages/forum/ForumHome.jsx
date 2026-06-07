@@ -117,58 +117,50 @@ const ForumHome = () => {
         setIsOpen={setIsCrisisModalOpen}
       />
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white mb-8 shadow-lg relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <Users className="w-64 h-64" />
-        </div>
-        <div className="relative z-10 md:w-2/3">
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Anonymous Community
-          </h1>
-          <p className="text-brand-100 text-lg md:text-xl font-medium leading-relaxed mb-8">
-            A safe, judgment-free space to share your experiences, ask for
-            advice, and support fellow students. Your real identity is never
-            revealed.
-          </p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-white text-brand-700 hover:bg-brand-50 font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-          >
-            <Plus className="w-6 h-6" /> Start a Conversation
-          </button>
-        </div>
+      <div className="card-lift p-8 md:p-12 mb-8 bg-brand-light/40">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-ink mb-2">
+          Anonymous Community 🫂
+        </h1>
+        <p className="text-muted text-lg md:text-base font-semibold leading-relaxed mb-6">
+          A safe space. No judgement. Just people who get it.
+        </p>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="btn-coral flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" /> New Post
+        </button>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Feed */}
         <div className="flex-1 order-2 lg:order-1 min-w-0">
           {/* Mobile Filter Toggle (Optional/Future Enhancement) */}
-          <div className="lg:hidden flex items-center gap-2 mb-4 p-4 bg-white rounded-2xl border border-slate-100 font-bold text-slate-700">
-            <Filter className="w-5 h-5 text-brand-500" /> Current Topic:{" "}
-            {category}
+          <div className="lg:hidden flex items-center gap-2 mb-4 p-4 bg-white rounded-2xl border-2 border-cream-dark font-bold text-ink shadow-lift">
+            <Filter className="w-5 h-5 text-brand" /> Current Topic: {category}
           </div>
 
           <div className="space-y-4">
             {isInitialLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-500 mb-4" />
-                <p className="text-slate-500 font-medium">
+                <Loader2 className="w-10 h-10 animate-spin text-brand mb-4" />
+                <p className="text-muted font-medium">
                   Loading community voices...
                 </p>
               </div>
             ) : posts.length === 0 ? (
-              <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
-                <Ghost className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-700 mb-2">
+              <div className="card-lift p-12 text-center">
+                <Ghost className="w-16 h-16 text-muted mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-ink mb-2">
                   It's quiet in here
                 </h3>
-                <p className="text-slate-500 mb-6">
+                <p className="text-muted mb-6">
                   There are no posts in this category yet. Be the first to start
                   the discussion!
                 </p>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="bg-brand-100 text-brand-700 hover:bg-brand-200 font-bold px-6 py-3 rounded-xl transition-colors"
+                  className="btn-primary"
                 >
                   Write a Post
                 </button>
@@ -194,10 +186,10 @@ const ForumHome = () => {
                   className="h-20 flex items-center justify-center pt-8 pb-4"
                 >
                   {isFetchingMore && (
-                    <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                    <Loader2 className="w-6 h-6 animate-spin text-muted" />
                   )}
                   {!hasNextPage && posts.length > 0 && (
-                    <span className="text-sm font-semibold text-slate-400">
+                    <span className="text-sm font-semibold text-muted">
                       You've reached the end of the line.
                     </span>
                   )}
@@ -209,19 +201,19 @@ const ForumHome = () => {
 
         {/* Sidebar Filters */}
         <div className="w-full lg:w-80 shrink-0 order-1 lg:order-2">
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sticky top-24">
-            <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-              <Filter className="w-5 h-5 text-brand-500" /> Topics
+          <div className="card-lift p-6 sticky top-24">
+            <h3 className="font-bold text-ink text-lg mb-4 flex items-center gap-2">
+              Topics
             </h3>
             <div className="flex flex-row lg:flex-col flex-wrap gap-2">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
-                  className={`text-left px-4 py-2.5 rounded-xl font-semibold transition-all text-sm md:text-base ${
+                  className={`text-left px-4 py-2.5 rounded-2xl font-semibold transition-all text-sm md:text-base ${
                     category === cat
-                      ? "bg-brand-50 text-brand-700 ring-1 ring-brand-200"
-                      : "bg-transparent text-slate-600 hover:bg-slate-50"
+                      ? "bg-brand-light text-brand border-2 border-brand/30"
+                      : "bg-white text-muted hover:bg-cream-dark border-2 border-cream-dark/30 hover:border-cream-dark"
                   }`}
                 >
                   {cat}

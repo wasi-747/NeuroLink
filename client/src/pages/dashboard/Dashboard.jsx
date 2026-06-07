@@ -28,6 +28,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import ForYou from "./ForYou";
 import WeeklyReport from "./WeeklyReport";
+import { motion } from "framer-motion";
 
 const StatCard = ({
   title,
@@ -38,39 +39,43 @@ const StatCard = ({
   children,
   colorClass,
 }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden group">
+  <div className="bg-white rounded-3xl border-2 border-cream-dark p-5 hover:-translate-y-1 transition-transform duration-200 shadow-[4px_4px_0px_0px_#F9E4CC] hover:shadow-[6px_6px_0px_0px_#E8D0B0]">
     <div
-      className={`absolute top-0 right-0 w-24 h-24 bg-${colorClass}-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110`}
-    />
-    <div className="z-10">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-          {title}
-        </h3>
-        <div className={`p-2 rounded-xl bg-slate-50 text-${colorClass}-600`}>
-          {icon}
-        </div>
-      </div>
-      <p className="text-4xl font-extrabold text-slate-800 tracking-tight">
+      className={`w-10 h-10 flex items-center justify-center text-xl rounded-2xl mb-4 ${
+        colorClass === "brand"
+          ? "bg-brand-light text-brand"
+          : colorClass === "mint"
+            ? "bg-mint/10 text-emerald-600"
+            : colorClass === "golden"
+              ? "bg-golden/10 text-amber-600"
+              : colorClass === "sky"
+                ? "bg-sky/10 text-sky-600"
+                : "bg-coral/10 text-red-500"
+      }`}
+    >
+      {icon}
+    </div>
+    <div>
+      <p className="text-3xl font-extrabold text-ink tracking-tight">
         {value}
         {unit && (
-          <span className="text-lg font-medium text-slate-400 ml-1 tracking-normal">
+          <span className="text-base font-bold text-muted ml-1 tracking-normal">
             {unit}
           </span>
         )}
       </p>
+      <h3 className="text-xs font-bold text-muted uppercase tracking-wide mt-1">
+        {title}
+      </h3>
     </div>
-    <div className="mt-6 z-10">{children}</div>
-    {linkTo && (
-      <Link
-        to={linkTo}
-        className={`text-sm font-semibold text-${colorClass}-600 hover:text-${colorClass}-700 mt-6 flex items-center transition-colors`}
-      >
-        View Details <ChevronsRight size={16} className="ml-1" />
-      </Link>
-    )}
+    <div className="mt-4">{children}</div>
   </div>
 );
+
+import MoodCheckIn from "../../components/MoodCheckIn";
+import SentimentJournal from "../../components/SentimentJournal";
+import SleepTracker from "../../components/SleepTracker";
+import FAQSearch from "../../components/FAQSearch";
 
 const calculateGratitudeStreak = (entries) => {
   if (entries.length === 0) return 0;
@@ -253,21 +258,52 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">
-          Welcome back, {user?.name}!
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Here's your wellness snapshot. Keep up the great work.
+    <div className="space-y-8 pb-20">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
+        <p className="text-muted font-semibold text-sm mb-1">
+          {new Date().getHours() < 12
+            ? "☀️ Good morning"
+            : new Date().getHours() < 17
+              ? "🌤️ Good afternoon"
+              : "🌙 Good evening"}
         </p>
-      </div>
+        <h1 className="text-4xl font-extrabold text-ink">
+          Hey, {user?.name || "Student"}! 👋
+        </h1>
+        <p className="text-muted text-sm mt-2">
+          How are you feeling today? Let's check in. ✨
+        </p>
+      </motion.div>
+
+      {quote.content && (
+        <motion.div
+          animate={{ opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 4, repeat: Infinity }}
+          className="bg-linear-to-r from-brand-light via-white to-cream-dark rounded-3xl p-5 mb-8 border-2 border-brand/10 relative overflow-hidden"
+        >
+          <span className="absolute -top-4 -left-2 text-[120px] text-brand/5 font-black select-none">
+            "
+          </span>
+
+          <p className="text-base font-bold text-ink italic relative z-10">
+            "{quote.content}"
+          </p>
+          <p className="text-xs text-muted mt-2 font-semibold">
+            — Daily Reminder 💜
+          </p>
+        </motion.div>
+      )}
 
       <WeeklyReport />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
-          title="Avg. Mood (7 days)"
+          title="Mood"
           value={
             moodData.length > 0
               ? moodData[moodData.length - 1].mood >= 4
@@ -277,139 +313,108 @@ const Dashboard = () => {
                   : "Low"
               : "N/A"
           }
-          icon={<Smile />}
+          icon="😊"
           linkTo="/mood"
           colorClass="brand"
-        >
-          {moodData.length > 1 ? (
-            <div className="h-14 mt-2">
-              <SparkLineChart
-                data={moodData}
-                index="date"
-                categories={["mood"]}
-                colors={[getMoodTrendColor()]}
-                className="h-full w-full"
-                showAnimation={true}
-              />
-            </div>
-          ) : (
-            <p className="text-xs font-medium text-slate-400 mt-2 bg-slate-50 p-2 rounded-md border border-slate-100">
-              Log more moods to see your weekly trend.
-            </p>
-          )}
-        </StatCard>
+        ></StatCard>
 
         <StatCard
-          title="Weekly Habit Completion"
+          title="Habits"
           value={habitCompletion}
           unit="%"
-          icon={<TrendingUp />}
+          icon="✅"
           linkTo="/habits"
-          colorClass="purple"
-        >
-          <div className="w-full bg-slate-100 rounded-full h-2 mt-4 overflow-hidden">
-            <div
-              className="bg-purple-500 h-1.5 rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${habitCompletion}%` }}
-            ></div>
-          </div>
-        </StatCard>
+          colorClass="mint"
+        ></StatCard>
 
         <StatCard
-          title="Gratitude Streak"
+          title="Streak"
           value={gratitudeStreak}
-          unit={gratitudeStreak === 1 ? "day" : "days"}
-          icon={<Award />}
+          unit=""
+          icon="🔥"
           linkTo="/gratitude"
-          colorClass="pink"
-        >
-          <p className="text-sm font-medium text-slate-500 mt-2">
-            Keep the streak going! What are you grateful for today?
-          </p>
-        </StatCard>
+          colorClass="golden"
+        ></StatCard>
 
         <StatCard
-          title="Journal Entries"
+          title="Journal"
           value={journalCount}
-          unit="this month"
-          icon={<BookOpen />}
+          unit=""
+          icon="✍️"
           linkTo="/journal"
-          colorClass="blue"
+          colorClass="sky"
         />
 
         <StatCard
-          title="Last Stress Score"
+          title="Stress"
           value={lastStressScore ? lastStressScore.score : "N/A"}
-          unit={lastStressScore ? `/ 40` : ""}
-          icon={<Zap />}
+          unit=""
+          icon="💆"
           linkTo="/stress-quiz"
-          colorClass="rose"
-        >
-          {lastStressScore && (
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 bg-rose-100 text-rose-800`}
-            >
-              {lastStressScore.level}
-            </span>
-          )}
-        </StatCard>
-
-        {quote.content && (
-          <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col justify-center relative overflow-hidden sm:col-span-2 lg:col-span-1 border border-slate-800 group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full -z-10 group-hover:bg-brand-500/20 transition-colors" />
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-              Quote of the Day
-            </h3>
-            <blockquote className="text-lg font-medium leading-relaxed">
-              "{quote.content}"
-            </blockquote>
-            <cite className="block mt-4 text-sm font-semibold text-brand-300">
-              - {quote.author}
-            </cite>
-          </div>
-        )}
+          colorClass="coral"
+        ></StatCard>
       </div>
 
-      <div className="mt-12 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
-        <h3 className="text-xl font-bold tracking-tight text-slate-900 mb-6">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="mt-8">
+        <div className="flex flex-wrap gap-3">
           <Link
             to="/mood"
-            className="p-4 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-2xl text-center font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] border border-brand-100 shadow-sm flex flex-col items-center gap-2"
+            className="font-bold text-sm rounded-2xl px-4 py-2.5 border-2 border-transparent hover:border-current hover:scale-105 transition-all duration-150 bg-brand-light text-brand"
           >
-            <Smile className="w-6 h-6 mb-1 opacity-80" /> Log Mood
+            😊 Log Mood
           </Link>
           <Link
             to="/journal"
-            className="p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-2xl text-center font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] border border-blue-100 shadow-sm flex flex-col items-center gap-2"
+            className="font-bold text-sm rounded-2xl px-4 py-2.5 border-2 border-transparent hover:border-current hover:scale-105 transition-all duration-150 bg-sky/10 text-sky-600"
           >
-            <BookOpen className="w-6 h-6 mb-1 opacity-80" /> Note Journal
+            📝 Journal
           </Link>
           <Link
             to="/habits"
-            className="p-4 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-2xl text-center font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] border border-purple-100 shadow-sm flex flex-col items-center gap-2"
+            className="font-bold text-sm rounded-2xl px-4 py-2.5 border-2 border-transparent hover:border-current hover:scale-105 transition-all duration-150 bg-mint/10 text-emerald-600"
           >
-            <TrendingUp className="w-6 h-6 mb-1 opacity-80" /> Check Habits
+            ✅ Habits
           </Link>
           <Link
             to="/stress-quiz"
-            className="p-4 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-2xl text-center font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] border border-rose-100 shadow-sm flex flex-col items-center gap-2"
+            className="font-bold text-sm rounded-2xl px-4 py-2.5 border-2 border-transparent hover:border-current hover:scale-105 transition-all duration-150 bg-coral/10 text-red-500"
           >
-            <Zap className="w-6 h-6 mb-1 opacity-80" /> Check Stress
+            💆 Stress
           </Link>
           <Link
             to="/gratitude"
-            className="p-4 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-2xl text-center font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] border border-pink-100 shadow-sm flex flex-col items-center gap-2 col-span-2 md:col-span-1 lg:col-span-1"
+            className="font-bold text-sm rounded-2xl px-4 py-2.5 border-2 border-transparent hover:border-current hover:scale-105 transition-all duration-150 bg-golden/10 text-amber-600"
           >
-            <Award className="w-6 h-6 mb-1 opacity-80" /> Add Gratitude
+            🙏 Gratitude
           </Link>
         </div>
       </div>
-      <div className="mt-12">
+      <section className="mt-12 mb-8">
+        <h3 className="text-2xl font-extrabold tracking-tight text-ink mb-1">
+          🤖 Your AI Wellness Toolkit
+        </h3>
+        <p className="text-sm text-muted mb-6">
+          Powered by real ML models trained just for you 🧠
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <MoodCheckIn />
+            <SleepTracker />
+          </div>
+          <div className="space-y-6 flex flex-col h-full">
+            <SentimentJournal />
+            <FAQSearch />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-16 pt-8 border-t-2 border-cream-dark/30">
+        <h3 className="text-2xl font-extrabold tracking-tight text-ink mb-1">
+          ✨ Made for You
+        </h3>
+        <p className="text-sm text-muted mb-8">Based on your activity</p>
         <ForYou />
-      </div>
+      </section>
     </div>
   );
 };

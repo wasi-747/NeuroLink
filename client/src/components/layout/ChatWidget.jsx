@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Loader2, Trash2 } from "lucide-react";
+import { X, Send, Loader2, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-hot-toast";
@@ -72,41 +73,46 @@ const ChatWidget = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-50 group">
       {/* Chat Bubble */}
       {!isOpen && (
-        <button
-          onClick={handleToggle}
-          className="bg-purple-600 text-white p-4 rounded-full shadow-lg hover:bg-purple-700 transition-transform transform hover:scale-110 flex items-center gap-2"
-        >
-          <MessageSquare size={24} />
-          <span className="font-semibold">Aria</span>
-        </button>
+        <div className="relative">
+          <div className="absolute inset-0 rounded-3xl bg-brand/30 animate-ping opacity-75" />
+          <motion.button
+            onClick={handleToggle}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative w-14 h-14 bg-brand rounded-3xl shadow-lg shadow-brand/40 text-white text-2xl flex items-center justify-center"
+          >
+            💬
+          </motion.button>
+          <div className="absolute bottom-16 right-0 whitespace-nowrap bg-ink text-white text-xs font-bold rounded-xl px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Chat with Aria ✨
+          </div>
+        </div>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-[380px] h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="w-95 h-130 bg-white rounded-3xl shadow-2xl flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300 overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+          <div className="p-4 border-b-2 border-cream-dark flex justify-between items-center bg-brand-light/40">
             <div>
-              <h3 className="font-bold text-gray-800">
-                Aria - AI Wellness Companion
-              </h3>
-              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-semibold">
-                AI, not a therapist
+              <h3 className="font-bold text-ink">Aria - Wellness Companion</h3>
+              <span className="text-xs bg-golden/20 text-golden px-2 py-0.5 rounded-full font-semibold">
+                AI support, not therapy
               </span>
             </div>
             <div>
               <button
                 onClick={handleClearChat}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors mr-2"
+                className="p-2 text-muted hover:text-ink hover:bg-cream-dark rounded-2xl transition-colors mr-2"
               >
                 <Trash2 size={18} />
               </button>
               <button
                 onClick={handleToggle}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-2 text-muted hover:text-ink hover:bg-cream-dark rounded-2xl transition-colors"
               >
                 <X size={20} />
               </button>
@@ -114,35 +120,37 @@ const ChatWidget = () => {
           </div>
 
           {/* Disclaimer */}
-          <div className="p-2 text-center bg-red-50 border-b border-red-100">
-            <p className="text-xs text-red-700">
+          <div className="p-2 text-center bg-coral/10 border-b-2 border-coral/20">
+            <p className="text-xs text-coral font-semibold">
               For emergencies, call your local crisis line.
             </p>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto">
+          <div className="flex-1 p-4 overflow-y-auto bg-cream/30">
             <div className="space-y-4">
               {messages.map((msg, index) => (
-                <div
+                <motion.div
                   key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-2xl ${
+                    className={`max-w-[80%] p-3 rounded-2xl font-medium ${
                       msg.role === "user"
-                        ? "bg-purple-600 text-white rounded-br-lg"
-                        : "bg-gray-200 text-gray-800 rounded-bl-lg"
+                        ? "bg-brand text-white rounded-br-lg"
+                        : "bg-cream-dark text-ink rounded-bl-lg"
                     }`}
                   >
                     {msg.content}
                   </div>
-                </div>
+                </motion.div>
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-200 text-gray-800 p-3 rounded-2xl rounded-bl-lg">
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                  <div className="bg-cream-dark text-ink p-3 rounded-2xl rounded-bl-lg">
+                    <Loader2 className="w-5 h-5 animate-spin text-brand" />
                   </div>
                 </div>
               )}
@@ -151,7 +159,7 @@ const ChatWidget = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t-2 border-cream-dark">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -159,12 +167,12 @@ const ChatWidget = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Type your message..."
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="input-field flex-1"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSend}
-                className="bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 disabled:bg-purple-300"
+                className="btn-primary px-3! py-2.5!"
                 disabled={isLoading || input.trim() === ""}
               >
                 <Send size={20} />

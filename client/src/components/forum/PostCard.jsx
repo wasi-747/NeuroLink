@@ -6,18 +6,18 @@ import { MessageCircle, Flag, ShieldAlert } from "lucide-react";
 
 const getCategoryColor = (category) => {
   const colors = {
-    "Academic Pressure": "bg-blue-100 text-blue-800 border-blue-200",
-    "Exam Stress": "bg-red-100 text-red-800 border-red-200",
-    "Anxiety": "bg-amber-100 text-amber-800 border-amber-200",
-    "Depression": "bg-slate-200 text-slate-800 border-slate-300",
-    "Relationship Stress": "bg-pink-100 text-pink-800 border-pink-200",
-    "Family Issues": "bg-orange-100 text-orange-800 border-orange-200",
-    "Loneliness": "bg-indigo-100 text-indigo-800 border-indigo-200",
-    "Sleep Problems": "bg-purple-100 text-purple-800 border-purple-200",
-    "Self-Esteem": "bg-emerald-100 text-emerald-800 border-emerald-200",
-    "General Support": "bg-teal-100 text-teal-800 border-teal-200",
+    "Academic Pressure": "bg-sky/10 text-sky-600 border-sky/20",
+    "Exam Stress": "bg-coral/10 text-coral border-coral/20",
+    Anxiety: "bg-brand-light text-brand border-brand/20",
+    Depression: "bg-purple-50 text-purple-600 border-purple-100",
+    "Relationship Stress": "bg-pink/10 text-pink border-pink/20",
+    "Family Issues": "bg-golden/10 text-golden border-golden/20",
+    Loneliness: "bg-sky/10 text-sky-600 border-sky/20",
+    "Sleep Problems": "bg-brand-light text-brand border-brand/20",
+    "Self-Esteem": "bg-mint/10 text-emerald-600 border-mint/20",
+    "General Support": "bg-mint/10 text-emerald-600 border-mint/20",
   };
-  return colors[category] || "bg-gray-100 text-gray-800 border-gray-200";
+  return colors[category] || "bg-cream-dark text-ink border-cream-dark/50";
 };
 
 const PostCard = ({ post, onReact, onReport, isDetailView = false }) => {
@@ -35,27 +35,31 @@ const PostCard = ({ post, onReact, onReport, isDetailView = false }) => {
   return (
     <CardWrapper
       to={isDetailView ? undefined : `/community/post/${post._id}`}
-      className={`block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden ${
-        isDetailView ? "" : "hover:border-brand-200 hover:shadow-md transition-all group"
+      className={`block card-lift overflow-hidden ${
+        isDetailView ? "" : "group"
       }`}
     >
       <div className="p-6">
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getCategoryColor(post.category)}`}>
+            <span
+              className={`px-3 py-1 rounded-2xl text-xs font-bold uppercase tracking-wider border-2 ${getCategoryColor(post.category)}`}
+            >
               {post.category}
             </span>
-            <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
-              <span className="text-slate-800 font-semibold">{post.anonymousAlias}</span>
+            <div className="flex items-center gap-2 text-sm text-muted font-medium">
+              <span className="text-ink font-semibold">
+                🐇 {post.anonymousAlias}
+              </span>
               <span>•</span>
               <span>{formatDistanceToNow(parseISO(post.createdAt))} ago</span>
             </div>
           </div>
-          <button 
+          <button
             onClick={handleReport}
             title="Report Post"
-            className="text-slate-300 hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+            className="text-coral/40 hover:text-coral p-1.5 rounded-lg hover:bg-coral/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
             style={{ opacity: isDetailView ? 1 : undefined }}
           >
             <Flag className="w-4 h-4" />
@@ -63,20 +67,27 @@ const PostCard = ({ post, onReact, onReport, isDetailView = false }) => {
         </div>
 
         {/* Content */}
-        <h2 className={`font-extrabold text-slate-900 mb-3 ${isDetailView ? "text-2xl" : "text-xl group-hover:text-brand-600 transition-colors"}`}>
+        <h2
+          className={`font-extrabold text-ink mb-3 ${isDetailView ? "text-2xl" : "text-xl group-hover:text-brand transition-colors"}`}
+        >
           {post.title}
         </h2>
-        <p className={`text-slate-600 leading-relaxed ${isDetailView ? "text-base whitespace-pre-wrap" : "text-sm line-clamp-3"}`}>
+        <p
+          className={`text-muted leading-relaxed ${isDetailView ? "text-base whitespace-pre-wrap" : "text-sm line-clamp-3"}`}
+        >
           {post.content}
         </p>
 
         {/* Footer */}
-        <div className="mt-6 flex items-center justify-between border-t border-slate-50 pt-4">
+        <div className="mt-6 flex items-center justify-between border-t border-cream-dark pt-4">
           <ReactionBar reactions={post.reactions} onReact={handleReact} />
-          
-          <div className="flex items-center gap-2 text-slate-500 font-medium text-sm bg-slate-50 px-3 py-1.5 rounded-full">
+
+          <div className="flex items-center gap-2 text-muted font-medium text-sm bg-cream-dark/30 px-3 py-1.5 rounded-full">
             <MessageCircle className="w-4 h-4" />
-            <span>{post.commentCount} {post.commentCount === 1 ? 'Reply' : 'Replies'}</span>
+            <span>
+              {post.commentCount}{" "}
+              {post.commentCount === 1 ? "Reply" : "Replies"}
+            </span>
           </div>
         </div>
       </div>

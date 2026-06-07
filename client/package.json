@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@tiptap/extension-placeholder": "^3.22.4",
     "@tiptap/react": "^3.22.4",
     "@tiptap/starter-kit": "^3.22.4",
@@ -22,7 +23,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.38.0",
     "jwt-decode": "^4.0.0",
-    "lucide-react": "^1.11.0",
+    "lucide-react": "^1.14.0",
     "react": "^18.2.0",
     "react-countup": "^6.5.3",
     "react-dom": "^18.2.0",

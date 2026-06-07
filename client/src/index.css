@@ -1,16 +1,155 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-100: #f3e8ff;
-  --color-brand-500: #a855f7;
-  --color-brand-600: #9333ea;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-cream: #fef3e8;
+  --color-cream-dark: #f9e4cc;
+
+  --color-brand: #7c3aed;
+  --color-brand-light: #ede9fe;
+  --color-brand-dark: #5b21b6;
+
+  --color-coral: #ff6b6b;
+  --color-mint: #34d399;
+  --color-golden: #f59e0b;
+  --color-sky: #38bdf8;
+  --color-pink: #f472b6;
+  --color-ink: #2d1b00;
+  --color-muted: #a08060;
+
+  --font-sans: "Nunito", system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--color-cream);
+    color: var(--color-ink);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Card lifted shadow effect */
+.card-lift {
+  @apply bg-white rounded-3xl border-2 border-cream-dark hover:-translate-y-1 transition-all duration-200;
+  box-shadow: 4px 4px 0px 0px #f9e4cc;
+}
+
+.card-lift:hover {
+  box-shadow: 6px 6px 0px 0px #e8d0b0;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-brand text-white font-bold rounded-2xl px-5 py-2.5 hover:bg-brand-dark hover:scale-105 active:scale-95 transition-all duration-150 active:translate-x-1 active:translate-y-1;
+  box-shadow: 3px 3px 0px 0px #5b21b6;
+}
+
+.btn-primary:active {
+  box-shadow: none;
+}
+
+.btn-coral {
+  @apply bg-coral text-white font-bold rounded-2xl px-5 py-2.5 hover:scale-105 active:scale-95 transition-all duration-150 active:translate-x-1 active:translate-y-1;
+  box-shadow: 3px 3px 0px 0px #cc4444;
+}
+
+.btn-coral:active {
+  box-shadow: none;
+}
+
+.btn-mint {
+  @apply bg-mint text-white font-bold rounded-2xl px-5 py-2.5 hover:scale-105 active:scale-95 transition-all duration-150 active:translate-x-1 active:translate-y-1;
+  box-shadow: 3px 3px 0px 0px #059669;
+}
+
+.btn-mint:active {
+  box-shadow: none;
+}
+
+.btn-golden {
+  @apply bg-golden text-white font-bold rounded-2xl px-5 py-2.5 hover:scale-105 active:scale-95 transition-all duration-150 active:translate-x-1 active:translate-y-1;
+  box-shadow: 3px 3px 0px 0px #b45309;
+}
+
+.btn-golden:active {
+  box-shadow: none;
+}
+
+/* Input styles */
+.input-field {
+  @apply bg-white border-2 border-cream-dark rounded-2xl px-4 py-2.5 text-sm font-medium text-ink placeholder:text-muted focus:border-brand focus:outline-none focus:ring-0 transition-colors duration-150;
+}
+
+/* Typography */
+.text-page-title {
+  @apply text-3xl font-extrabold text-ink;
+}
+
+.text-section-title {
+  @apply text-xl font-bold text-ink;
+}
+
+.text-body {
+  @apply text-sm font-medium text-ink;
+}
+
+.text-muted-sm {
+  @apply text-sm text-muted;
 }
