@@ -9,7 +9,8 @@ This document provides a comprehensive overview of the machine learning and algo
 2. [Machine Learning Datasets & Preprocessing](#-2-machine-learning-datasets--preprocessing)
 3. [Model Training Pipeline & Features](#-3-model-training-pipeline--features)
 4. [API Integration & Recent Troubleshooting](#-4-api-integration--recent-troubleshooting)
-5. [Teacher Presentation Q&A Cheat Sheet](#-5-teacher-presentation-qa-cheat-sheet)
+5. [How to Run the Code for a Live Demo](#-5-how-to-run-the-code-for-a-live-demo)
+6. [Q&A](#-6-qa)
 
 ---
 
@@ -88,7 +89,11 @@ Datasets --> train_all_models.py
     $$\text{mood\_score} = 5 - \left(\frac{\text{mental\_health\_score}}{6} \times 4\right)$$
     *Here, depression, anxiety, and panic are binary indicators (1 for present, 0 for absent). The weights reflect clinical severity. A fully symptomatic student maps to a score of `1.0` (Very Low), while a symptom-free student maps to `5.0` (Excellent).*
 *   **Why StandardScaler was utilized:** Numerical scaling was applied before training because input columns exist on different scales. `Age` has a range of ~18-40, while indicators (e.g. `has_depression`) are binary (0 or 1). Standard scaling transforms them to have a mean of 0 and standard deviation of 1. Without scaling, linear and gradient-based algorithms would over-index on age simply due to its scale.
-*   **Model Selection:** Linear Regression was selected, achieving an $R^2$ of `1.000` and MAE of `0.000`.
+*   **Algorithms Evaluated & Performance (Actual Run):**
+    *   **Linear Regression (Best Model):** $R^2$: `1.000` | MAE: `0.000` (Saved)
+    *   **Gradient Boosting Regressor:** $R^2$: `1.000` | MAE: `0.000`
+    *   **Random Forest Regressor:** $R^2$: `1.000` | MAE: `0.011`
+*   **Model Selection:** Linear Regression was selected as the production model.
     > [!NOTE]
     > The perfect $R^2$ of `1.000` occurs because the target variable `mood_score` is a deterministic linear combination of input variables. Linear Regression mathematically learns these exact parameters, yielding zero error.
 
@@ -96,7 +101,17 @@ Datasets --> train_all_models.py
 *   **Goal:** Classify reflections into `NEUTRAL`, `NEGATIVE`, or `CRISIS`.
 *   **Why TF-IDF Vectorization was utilized:** We initialized `TfidfVectorizer` (ngram range 1-2, max 5,000 features, English stopword exclusion). Simple word counts (CountVectorizer) allow common neutral words like "feel" or "today" to dominate the representation. TF-IDF down-scales high-frequency common words and weights terms carrying emotion (e.g., "worthless", "hopeless", "joyful").
 *   **Why `stratify=y_text` was necessary:** The merged dataset has class imbalance (fewer `CRISIS` samples). Using `stratify=y_text` during `train_test_split` guarantees that the training and test sets maintain the exact same proportions of each class, ensuring representativeness and preventing the model from under-learning the minority class.
-*   **Model Selection:** Logistic Regression was selected (Accuracy: `0.818`), beating Support Vector Classifier (`0.817`) and Random Forest (`0.810`).
+*   **Algorithms Evaluated & Accuracy (Actual Run):**
+    *   **Logistic Regression (Best Model):** Accuracy: `0.818` (Saved)
+    *   **Support Vector Classifier (SVC):** Accuracy: `0.817`
+    *   **Random Forest Classifier:** Accuracy: `0.810`
+*   **Model Selection:** Logistic Regression was selected as the production model.
+*   **Classification Report (Best Model - Logistic Regression):**
+    | Class Label | Precision | Recall | F1-Score |
+    | :--- | :--- | :--- | :--- |
+    | **CRISIS** | `0.78` | `0.75` | `0.77` |
+    | **NEGATIVE** | `0.80` | `0.75` | `0.78` |
+    | **NEUTRAL** | `0.86` | `0.92` | `0.89` |
 
 ### Task 3: Sleep Insights (Rule-based & Correlations)
 Extracts a Pearson correlation matrix from sleep statistics and saves it to `sleep_correlations.json`. It also compiles warning thresholds and wellness recommendations to `sleep_insights.json` for:
@@ -173,7 +188,28 @@ FastAPI exposes these models via dedicated endpoints (prefixed with `/api/ml`):
 
 ---
 
-## 🎓 5. Teacher Presentation Q&A Cheat Sheet
+## 💻 5. How to Run the Code for a Live Demo
+
+If your teacher asks to see the training pipeline run or the API microservice endpoints running live, follow these steps in your terminal:
+
+### Step 1: Run the Model Training Script
+Open a terminal in the project root, navigate to the `ml-service` folder, and execute the training pipeline script:
+```powershell
+cd ml-service
+python training/train_all_models.py
+```
+This script executes the data processing, trains all the regression and classification models, outputs $R^2$ scores, accuracies, and classification reports, and serializes the resulting models and indices to `ml-service/models/` and `ml-service/data/`.
+
+### Step 2: Start the FastAPI Server
+Start the local development server for the machine learning microservice:
+```powershell
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
+Once the server starts up, you can access the interactive API documentation at: **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**. You can use this Swagger UI to test the endpoints live (such as inputting journals or demographics and getting mood predictions or crisis flags) directly in front of the teacher.
+
+---
+
+## 🎓 6. Q&A
 
 *   **Q1: Why did you scale your features for the Mood Prediction model?**
     *   **A:** Algorithms like linear regression calculate gradients based on feature values. Since `Age` has a range of ~18-40, while indicators like `has_depression` are binary (0 or 1), a model might assign disproportionate weight to age simply due to its scale. Standard scaling transforms features to have a mean of 0 and standard deviation of 1, ensuring fair learning.

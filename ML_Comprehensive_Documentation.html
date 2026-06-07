@@ -759,7 +759,8 @@
                 <li><a href="#datasets" class="toc-link">2. Datasets &amp; Preprocessing</a></li>
                 <li><a href="#pipeline" class="toc-link">3. Model Training &amp; Pipeline</a></li>
                 <li><a href="#endpoints" class="toc-link">4. API Catalog &amp; Troubleshooting</a></li>
-                <li><a href="#presentation" class="toc-link">5. Teacher Presentation Q&amp;A</a></li>
+                <li><a href="#demo" class="toc-link">5. How to Run for a Live Demo</a></li>
+                <li><a href="#presentation" class="toc-link">6. Q&amp;A</a></li>
             </ul>
         </div>
         
@@ -977,8 +978,16 @@
 
             <p>
                 <strong>Evaluation &amp; Selection:</strong> Linear Regression, Random Forest, and Gradient Boosting were evaluated.
-                Linear Regression was selected as the production model, achieving a coefficient of determination \(R^2 = 1.000\) and Mean Absolute Error \(\text{MAE} = 0.000\).
+                Linear Regression was selected as the production model.
             </p>
+            <p>
+                <strong>Algorithms Evaluated &amp; Performance (Actual Run):</strong>
+            </p>
+            <ul>
+                <li><strong>Linear Regression (Best Model):</strong> \(R^2\): <code>1.000</code> | \(\text{MAE}\): <code>0.000</code> (Saved)</li>
+                <li><strong>Gradient Boosting Regressor:</strong> \(R^2\): <code>1.000</code> | \(\text{MAE}\): <code>0.000</code></li>
+                <li><strong>Random Forest Regressor:</strong> \(R^2\): <code>1.000</code> | \(\text{MAE}\): <code>0.011</code></li>
+            </ul>
             <blockquote>
                 [!NOTE]
                 The perfect \(R^2\) of 1.000 occurs because the target variable <code>mood_score</code> is a deterministic, linear combination of the input features. Linear Regression mathematically discovers these exact coefficients, resulting in zero prediction error.
@@ -997,8 +1006,51 @@
                 </li>
             </ul>
             <p>
-                <strong>Evaluation &amp; Selection:</strong> Logistic Regression, Support Vector Machine (SVM), and Random Forest Classifiers were evaluated. Logistic Regression was selected (Accuracy: 0.818).
+                <strong>Evaluation &amp; Selection:</strong> Logistic Regression, Support Vector Machine (SVM), and Random Forest Classifiers were evaluated. Logistic Regression was selected as the production model.
             </p>
+            <p>
+                <strong>Algorithms Evaluated &amp; Accuracy (Actual Run):</strong>
+            </p>
+            <ul>
+                <li><strong>Logistic Regression (Best Model):</strong> Accuracy: <code>0.818</code> (Saved)</li>
+                <li><strong>Support Vector Classifier (SVC):</strong> Accuracy: <code>0.817</code></li>
+                <li><strong>Random Forest Classifier:</strong> Accuracy: <code>0.810</code></li>
+            </ul>
+            <p>
+                <strong>Classification Report (Best Model - Logistic Regression):</strong>
+            </p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class Label</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1-Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CRISIS</strong></td>
+                            <td><code>0.78</code></td>
+                            <td><code>0.75</code></td>
+                            <td><code>0.77</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>NEGATIVE</strong></td>
+                            <td><code>0.80</code></td>
+                            <td><code>0.75</code></td>
+                            <td><code>0.78</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>NEUTRAL</strong></td>
+                            <td><code>0.86</code></td>
+                            <td><code>0.92</code></td>
+                            <td><code>0.89</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <h3>Task 3: Sleep Insights (Rule-based &amp; Pearson Correlations)</h3>
             <p>
@@ -1161,12 +1213,53 @@
             </div>
         </section>
 
-        <!-- SECTION 5: Teacher Presentation Q&A -->
-        <section id="presentation" class="page-break">
-            <h2>🎓 5. Teacher Presentation Q&amp;A Cheat Sheet</h2>
+        <!-- SECTION 5: How to Run the Code for a Live Demo -->
+        <section id="demo" class="page-break">
+            <h2>💻 5. How to Run the Code for a Live Demo</h2>
             <p>
-                Use this cheat sheet to answer questions regarding model selections, parameter choices, and evaluation metrics during the presentation:
+                If your teacher asks to see the training pipeline run or the API microservice endpoints running live, follow these steps in your terminal:
             </p>
+
+            <h3>Step 1: Run the Model Training Script</h3>
+            <p>
+                Open a terminal in the project root, navigate to the <code>ml-service</code> folder, and execute the training pipeline script:
+            </p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerShell / Command Line</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy Command</button>
+                </div>
+                <pre><code>cd ml-service
+python training/train_all_models.py</code></pre>
+                </div>
+                <p>
+                    This script executes the data processing, trains all the regression and classification models, outputs \(R^2\) scores, accuracies, and classification reports, and serializes the resulting models and indices to <code>ml-service/models/</code> and <code>ml-service/data/</code>.
+                </p>
+
+                <h3>Step 2: Start the FastAPI Server</h3>
+                <p>
+                    Start the local development server for the machine learning microservice:
+                </p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>PowerShell / Command Line</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy Command</button>
+                    </div>
+                    <pre><code>python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload</code></pre>
+                </div>
+                <p>
+                    Once the server starts up, you can access the interactive API documentation at:
+                    <strong style="margin-left: 0.25rem;"><a href="http://127.0.0.1:8000/docs" target="_blank" style="color: var(--accent-primary); text-decoration: none;">http://127.0.0.1:8000/docs</a></strong>.
+                    You can use this Swagger UI to test the endpoints live (such as inputting journals or demographics and getting mood predictions or crisis flags) directly in front of the teacher.
+                </p>
+            </section>
+
+            <!-- SECTION 6: Q&A -->
+            <section id="presentation" class="page-break">
+                <h2>🎓 6. Q&amp;A</h2>
+                <p>
+                    Use this cheat sheet to answer questions regarding model selections, parameter choices, and evaluation metrics during the presentation:
+                </p>
 
             <div class="qa-card">
                 <div class="qa-question">
