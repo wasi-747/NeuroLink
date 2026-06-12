@@ -135,19 +135,17 @@ Our machine learning code ownership is split across the following team responsib
    * Maps scientific/demographic study conclusions to domain baselines.
    * *Contact points:* `ml-service/models/` (sleep configurations), `server/controllers/ml.js`.
 
-3. **Jinnat Akter Afrin (NLP Developer):**
-   * Manages text cleaning preprocessing functions, stopword dictionaries, and TF-IDF parameters.
-   * Trains and optimizes text sentiment classification models.
-   * *Contact points:* `ml-service/routers/predict.py` (sentiment endpoint), `ml-service/training/train_all_models.py`.
+3. **Jinnat Akter Afrin (Graph Engineer):**
+   * Owns the NetworkX semantic graph structure and SentenceTransformer embedding calibrations.
+   * Updates DFS preorder traversal pathfinder logic and embedding parameters.
+   * *Contact points:* `ml-service/routers/learning.py`, `ml-service/knowledge_graph.pkl`.
 
 4. **Md. Annan (NLP Developer):**
    * Coordinates NLP pipeline testing and JSON request payloads validation.
    * Implements clean text preprocessing functions and assists in text sentiment classification tasks.
    * *Contact points:* `ml-service/routers/predict.py` (sentiment endpoint), `ml-service/training/train_all_models.py`.
 
-5. **Mahadi Hasan Tanmay (Graph & Testing Engineer):**
-   * Owns the NetworkX semantic graph structure and SentenceTransformer embedding calibrations.
-   * Updates DFS preorder traversal pathfinder logic and embedding parameters.
+5. **Mahadi Hasan Tanmay (Testing/FAQ):**
    * Fine-tunes the tokenization FAQ indexer and keyword relevance scores.
    * Manages test assertions, performance metrics plots, and pickle validation scripts.
-   * *Contact points:* `ml-service/training/generate_final_plots.py`, `ml-service/routers/predict.py` (faq search), `ml-service/routers/learning.py`, `ml-service/knowledge_graph.pkl`.
+   * *Contact points:* `ml-service/training/generate_final_plots.py`, `ml-service/routers/predict.py` (faq search).
