@@ -124,7 +124,7 @@ Understanding our repository layout is key to finding files quickly:
 
 Our machine learning code ownership is split across the following team responsibilities:
 
-1. **Wasiur Rahman Sakib (Lead/Backend):**
+1. **Wasiur Rahman Sakib (NLP Developer):**
    * Manages microservice architecture connections (REST API endpoints).
    * Oversees target engineering math, scaler normalizations, and overall pipeline performance.
    * *Contact points:* `ml-service/main.py`, `ml-service/routers/predict.py`.
@@ -139,7 +139,7 @@ Our machine learning code ownership is split across the following team responsib
    * Trains and optimizes text sentiment classification models.
    * *Contact points:* `ml-service/routers/predict.py` (sentiment endpoint), `ml-service/training/train_all_models.py`.
 
-4. **Md. Annan (Graph Engineer):**
+4. **Md. Annan (NLP Developer):**
    * Owns the NetworkX semantic graph structure and SentenceTransformer embedding calibrations.
    * Updates DFS preorder traversal pathfinder logic and embedding parameters.
    * *Contact points:* `ml-service/routers/learning.py`, `ml-service/knowledge_graph.pkl`.
