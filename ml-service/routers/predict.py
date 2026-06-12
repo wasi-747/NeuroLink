@@ -31,12 +31,9 @@ def predict_mood(req: MoodPredictRequest):
     else: cgpa_enc = 0
         
     marital_enc = 1 if req.marital_status.lower() == 'yes' else 0
-    dep_enc = 1 if req.has_depression else 0
-    anx_enc = 1 if req.has_anxiety else 0
-    pan_enc = 1 if req.has_panic else 0
     
-    feature_names = ['gender', 'age', 'year_of_study', 'cgpa', 'marital_status', 'has_depression', 'has_anxiety', 'has_panic']
-    features = pd.DataFrame([[gender_enc, req.age, year_enc, cgpa_enc, marital_enc, dep_enc, anx_enc, pan_enc]], columns=feature_names)
+    feature_names = ['gender_encoded', 'Age', 'year_encoded', 'cgpa_encoded', 'marital_encoded']
+    features = pd.DataFrame([[gender_enc, req.age, year_enc, cgpa_enc, marital_enc]], columns=feature_names)
     features_scaled = mood_scaler.transform(features)
     
     score = mood_model.predict(features_scaled)[0]

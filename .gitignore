@@ -33,3 +33,9 @@ venv/
 *.gpickle
 *.pkl
 knowledge_graph.*
+
+# For folders
+For FYDP/
+For ML/
+For PMG/
+

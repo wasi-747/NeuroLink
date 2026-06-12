@@ -80,7 +80,7 @@ df_mood['marital_encoded'] = df_mood['Marital status'].apply(lambda x: 1 if x ==
 mental_health_score = (df_mood['has_depression'] * 3) + (df_mood['has_anxiety'] * 2) + (df_mood['has_panic'] * 1)
 df_mood['mood_score'] = 5 - ((mental_health_score / 6) * 4)
 
-X_mood = df_mood[['gender_encoded', 'Age', 'year_encoded', 'cgpa_encoded', 'marital_encoded', 'has_depression', 'has_anxiety', 'has_panic']]
+X_mood = df_mood[['gender_encoded', 'Age', 'year_encoded', 'cgpa_encoded', 'marital_encoded']]
 y_mood = df_mood['mood_score']
 
 X_train_mood, X_test_mood, y_train_mood, y_test_mood = train_test_split(X_mood, y_mood, test_size=0.2, random_state=42)
