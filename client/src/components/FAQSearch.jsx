@@ -33,7 +33,7 @@ const FAQSearch = () => {
   };
 
   return (
-    <div className="card-lift p-6 relative overflow-hidden flex flex-col h-full">
+    <div className="card-lift p-6 relative overflow-hidden flex flex-col">
       <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-r from-mint to-brand-light rounded-t-3xl"></div>
 
       <div className="flex items-center gap-3 mb-6 mt-2">

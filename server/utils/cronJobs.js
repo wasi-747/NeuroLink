@@ -19,8 +19,8 @@ export const getWeeklyStats = async (userId, endDate) => {
   // Mood
   const moodEntries = await MoodEntry.find({
     user: userId,
-    date: { $gte: startDate, $lte: endDate },
-  }).sort("date");
+    timestamp: { $gte: startDate, $lte: endDate },
+  }).sort("timestamp");
   const avgMood =
     moodEntries.length > 0
       ? moodEntries.reduce((acc, entry) => acc + entry.rating, 0) /
@@ -58,7 +58,7 @@ export const getWeeklyStats = async (userId, endDate) => {
   // Journal
   const journalEntries = await JournalEntry.find({
     user: userId,
-    date: { $gte: startDate, $lte: endDate },
+    createdAt: { $gte: startDate, $lte: endDate },
   });
   const journalCount = journalEntries.length;
   const avgSentiment =
@@ -72,8 +72,8 @@ export const getWeeklyStats = async (userId, endDate) => {
   // Stress
   const stressResult = await StressQuizResult.findOne({
     user: userId,
-    date: { $gte: startDate, $lte: endDate },
-  }).sort("-date");
+    completedAt: { $gte: startDate, $lte: endDate },
+  }).sort("-completedAt");
 
   // Gratitude
   const gratitudeEntries = await GratitudeEntry.find({ user: userId }).sort(
@@ -106,7 +106,7 @@ export const getWeeklyStats = async (userId, endDate) => {
     habitCompletion: parseFloat(habitCompletion.toFixed(1)),
     journalCount,
     avgSentiment: avgSentiment ? parseFloat(avgSentiment.toFixed(2)) : null,
-    stressScore: stressResult ? stressResult.totalScore : null,
+    stressScore: stressResult ? stressResult.score : null,
     gratitudeStreak,
   };
 };

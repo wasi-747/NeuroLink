@@ -20,13 +20,13 @@ export const getRecommendations = asyncHandler(async (req, res, next) => {
   // 1. Fetch all data in parallel
   const [moodEntries, stressQuizzes, journalEntries, sleepHabit] =
     await Promise.all([
-      MoodEntry.find({ user: userId, date: { $gte: fourteenDaysAgo } }).sort({
-        date: -1,
+      MoodEntry.find({ user: userId, timestamp: { $gte: fourteenDaysAgo } }).sort({
+        timestamp: -1,
       }),
       StressQuizResult.find({
         user: userId,
-        createdAt: { $gte: fourteenDaysAgo },
-      }).sort({ createdAt: -1 }),
+        completedAt: { $gte: fourteenDaysAgo },
+      }).sort({ completedAt: -1 }),
       JournalEntry.find({ user: userId, createdAt: { $gte: fourteenDaysAgo } }),
       Habit.findOne({ user: userId, name: "Sleep" }),
     ]);

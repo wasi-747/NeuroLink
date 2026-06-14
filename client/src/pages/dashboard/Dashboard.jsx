@@ -80,7 +80,12 @@ import FAQSearch from "../../components/FAQSearch";
 const calculateGratitudeStreak = (entries) => {
   if (entries.length === 0) return 0;
   const dates = entries
-    .map((e) => format(parseISO(e.createdAt), "yyyy-MM-dd"))
+    .map((e) => {
+      const dateVal = e.createdAt || e.date;
+      if (!dateVal) return format(new Date(), "yyyy-MM-dd");
+      const parsed = typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal);
+      return format(parsed, "yyyy-MM-dd");
+    })
     .sort()
     .reverse();
   const uniqueDates = [...new Set(dates)];
@@ -125,19 +130,23 @@ const Dashboard = () => {
           data: { data: [] },
         }));
         if (moodRes.data && moodRes.data.data) {
-          const processedMoods = moodRes.data.data.map((m) => ({
-            date: format(parseISO(m.timestamp), "MMM dd"),
-            mood:
-              m.mood === "Happy"
-                ? 5
-                : m.mood === "Calm"
-                  ? 4
-                  : m.mood === "Sad"
-                    ? 2
-                    : m.mood === "Anxious"
-                      ? 1
-                      : 0,
-          }));
+          const processedMoods = moodRes.data.data.map((m) => {
+            const dateVal = m.timestamp;
+            const parsed = dateVal ? (typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal)) : new Date();
+            return {
+              date: format(parsed, "MMM dd"),
+              mood:
+                m.mood === "Happy"
+                  ? 5
+                  : m.mood === "Calm"
+                    ? 4
+                    : m.mood === "Sad"
+                      ? 2
+                      : m.mood === "Anxious"
+                        ? 1
+                        : 0,
+            };
+          });
           setMoodData(processedMoods);
         }
 
@@ -168,12 +177,15 @@ const Dashboard = () => {
         if (journalRes.data?.data) {
           const monthStart = startOfMonth(today);
           const monthEnd = endOfMonth(today);
-          const count = journalRes.data.data.filter((e) =>
-            isWithinInterval(parseISO(e.createdAt), {
+          const count = journalRes.data.data.filter((e) => {
+            const dateVal = e.createdAt;
+            if (!dateVal) return false;
+            const parsed = typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal);
+            return isWithinInterval(parsed, {
               start: monthStart,
               end: monthEnd,
-            }),
-          ).length;
+            });
+          }).length;
           setJournalCount(count);
         }
 
@@ -301,7 +313,7 @@ const Dashboard = () => {
 
       <WeeklyReport />
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard
           title="Mood"
           value={
@@ -396,12 +408,12 @@ const Dashboard = () => {
         <p className="text-sm text-muted mb-6">
           Powered by real ML models trained just for you 🧠
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="flex flex-col gap-6">
             <MoodCheckIn />
             <SleepTracker />
           </div>
-          <div className="space-y-6 flex flex-col h-full">
+          <div className="flex flex-col gap-6">
             <SentimentJournal />
             <FAQSearch />
           </div>

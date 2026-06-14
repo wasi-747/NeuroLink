@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   X,
-  BrainCircuit,
 } from "lucide-react";
 import axios from "axios";
 
@@ -57,17 +56,14 @@ const AdminLayout = () => {
         {/* Brand */}
         <div className="h-20 flex items-center px-6 border-b border-slate-800 shrink-0">
           <Link to="/" className="flex items-center gap-3">
-            <div className="bg-brand-500/20 p-2 rounded-xl">
-              <BrainCircuit className="h-6 w-6 text-brand-400" />
-            </div>
-            <div>
-              <span className="font-bold text-xl tracking-tight text-white block">
-                NeuroVerse
-              </span>
-              <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">
-                Admin Portal
-              </span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="NeuroVerse"
+              className="h-10 w-auto object-contain brightness-0 invert"
+            />
+            <span className="text-xs font-bold text-brand-400 uppercase tracking-widest mt-1">
+              Admin Portal
+            </span>
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}

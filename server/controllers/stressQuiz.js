@@ -80,7 +80,7 @@ export const submitQuiz = asyncHandler(async (req, res, next) => {
   const quizResult = await StressQuizResult.create({
     user: req.user.id,
     score,
-    level,
+    severity: level,
     recommendations,
     answers
   });
@@ -95,7 +95,7 @@ export const submitQuiz = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/stress-quiz
 // @access  Private
 export const getQuizHistory = asyncHandler(async (req, res, next) => {
-  const history = await StressQuizResult.find({ user: req.user.id }).sort({ timestamp: -1 });
+  const history = await StressQuizResult.find({ user: req.user.id }).sort({ completedAt: -1 });
   
   res.status(200).json({
     success: true,

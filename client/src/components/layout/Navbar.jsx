@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
-  BrainCircuit,
   Menu,
   X,
   LogOut,
@@ -202,13 +201,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center">
         <div className="flex justify-between w-full">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="p-1.5 rounded-xl group-hover:bg-brand-light transition-colors">
-                <BrainCircuit className="h-6 w-6 text-brand" />
-              </div>
-              <span className="font-extrabold text-lg text-ink">
-                NeuroVerse
-              </span>
+            <Link to="/" className="flex items-center group">
+              <img
+                src="/logo.png"
+                alt="NeuroVerse"
+                className="h-10 w-auto object-contain transition-opacity group-hover:opacity-80"
+              />
             </Link>
           </div>
 
