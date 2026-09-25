@@ -1,14 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { getHabits, createHabit, getLogs, logHabit, deleteHabit } from "../../api/habit";
 import { toast } from "react-hot-toast";
-import { TrendingUp, Plus, Loader2, CheckCircle2, Circle, Flame, Calendar as CalendarIcon, Target, X, Trash2 } from "lucide-react";
+import confetti from "canvas-confetti";
+import {
+  TrendingUp,
+  Plus,
+  Loader2,
+  CheckCircle2,
+  Circle,
+  Flame,
+  Calendar as CalendarIcon,
+  Target,
+  X,
+  Trash2,
+  Sparkles,
+  Brain,
+  Droplets,
+  Dumbbell,
+  PhoneOff,
+  Book,
+  Moon,
+  Sun,
+  HeartPulse,
+  Coffee,
+  Briefcase,
+  Music,
+  Star,
+  Check,
+} from "lucide-react";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
-import * as Icons from "lucide-react";
 
-const AVAILABLE_ICONS = [
-  "Moon", "Dumbbell", "Brain", "Book", "SmartphoneOff",
-  "Droplets", "Sun", "HeartPulse", "Coffee", "Briefcase", "Music", "Star"
-];
+const CATEGORIES = ["All", "Mind", "Health", "Fitness", "Sleep"];
+
+const HABIT_ICONS = {
+  Moon,
+  Dumbbell,
+  Brain,
+  Book,
+  PhoneOff,
+  Droplets,
+  Sun,
+  HeartPulse,
+  Coffee,
+  Briefcase,
+  Music,
+  Star,
+};
+
+const AVAILABLE_ICONS = Object.keys(HABIT_ICONS);
 
 const HabitTracker = () => {
   const [habits, setHabits] = useState([]);
@@ -16,8 +55,10 @@ const HabitTracker = () => {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState("Star");
-  
+  const [selectedCategory, setSelectedCategory] = useState("Mind");
+  const [selectedIcon, setSelectedIcon] = useState("Brain");
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState("All");
+
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
@@ -27,9 +68,9 @@ const HabitTracker = () => {
     try {
       const [habitsRes, logsRes] = await Promise.all([
         getHabits(),
-        getLogs(format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd'))
+        getLogs(format(weekStart, "yyyy-MM-dd"), format(weekEnd, "yyyy-MM-dd")),
       ]);
-      
+
       if (habitsRes.data?.data) setHabits(habitsRes.data.data);
       if (logsRes.data?.data) setLogs(logsRes.data.data);
     } catch (err) {
@@ -46,10 +87,14 @@ const HabitTracker = () => {
   const handleAddHabit = async (e) => {
     e.preventDefault();
     if (!newHabitName.trim()) return;
-    
+
     try {
-      await createHabit({ name: newHabitName, icon: selectedIcon });
-      toast.success("Habit added!");
+      await createHabit({
+        name: newHabitName,
+        icon: selectedIcon,
+        category: selectedCategory,
+      });
+      toast.success("Habit added to your routine! 🌱");
       setNewHabitName("");
       setIsAdding(false);
       fetchData();
@@ -59,9 +104,25 @@ const HabitTracker = () => {
   };
 
   const handleToggleLog = async (habitId, date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const existingLog = logs.find(l => l.habit === habitId && format(parseISO(l.date), 'yyyy-MM-dd') === dateStr);
+    const dateStr = format(date, "yyyy-MM-dd");
+    const existingLog = logs.find(
+      (l) =>
+        l.habit === habitId &&
+        format(parseISO(l.date), "yyyy-MM-dd") === dateStr,
+    );
     const isCompleted = existingLog ? !existingLog.completed : true;
+
+    // Trigger confetti if completing today's habit
+    if (isCompleted && isSameDay(date, today)) {
+      try {
+        confetti({
+          particleCount: 45,
+          spread: 50,
+          origin: { y: 0.65 },
+          colors: ["#34d399", "#10b981", "#7c3aed", "#f59e0b"],
+        });
+      } catch (e) {}
+    }
 
     // Optimistic UI update
     const newLogs = [...logs];
@@ -69,7 +130,10 @@ const HabitTracker = () => {
       existingLog.completed = isCompleted;
       setLogs([...newLogs]);
     } else {
-      setLogs([...newLogs, { habit: habitId, date: dateStr, completed: isCompleted }]);
+      setLogs([
+        ...newLogs,
+        { habit: habitId, date: dateStr, completed: isCompleted },
+      ]);
     }
 
     try {
@@ -81,10 +145,10 @@ const HabitTracker = () => {
   };
 
   const handleDeleteHabit = async (id) => {
-    if (!window.confirm("Delete this habit forever?")) return;
+    if (!window.confirm("Delete this habit from your matrix?")) return;
     try {
       await deleteHabit(id);
-      toast.success("Habit deleted");
+      toast.success("Habit removed");
       fetchData();
     } catch (err) {
       toast.error("Failed to delete habit");
@@ -92,169 +156,331 @@ const HabitTracker = () => {
   };
 
   const calculateCompletion = (habitId) => {
-    const habitLogs = logs.filter(l => l.habit === habitId && l.completed);
+    const habitLogs = logs.filter((l) => l.habit === habitId && l.completed);
     return Math.round((habitLogs.length / 7) * 100);
   };
 
   const calculateStreak = (habitId) => {
-    const habitLogs = logs.filter(l => l.habit === habitId && l.completed).map(l => format(parseISO(l.date), 'yyyy-MM-dd'));
+    const habitLogs = logs
+      .filter((l) => l.habit === habitId && l.completed)
+      .map((l) => format(parseISO(l.date), "yyyy-MM-dd"));
     let streak = 0;
-    const todayStr = format(today, 'yyyy-MM-dd');
+    const todayStr = format(today, "yyyy-MM-dd");
     if (habitLogs.includes(todayStr)) streak++;
-    return streak; // Simplified streak for UI
+    return streak;
   };
 
   const RenderIcon = ({ name, className }) => {
-    const IconComponent = Icons[name] || Icons.Star;
+    const IconComponent = HABIT_ICONS[name] || Star;
     return <IconComponent className={className} />;
   };
+
+  // Filtered habits by Category
+  const filteredHabits =
+    activeCategoryFilter === "All"
+      ? habits
+      : habits.filter(
+          (h) =>
+            h.category?.toLowerCase() === activeCategoryFilter.toLowerCase(),
+        );
+
+  // Overall Matrix Stats
+  const todayStr = format(today, "yyyy-MM-dd");
+  const completedTodayCount = habits.filter((h) => {
+    const log = logs.find(
+      (l) =>
+        l.habit === h._id &&
+        format(parseISO(l.date), "yyyy-MM-dd") === todayStr,
+    );
+    return log?.completed;
+  }).length;
+
+  const totalHabitsCount = habits.length;
+  const overallPercentage =
+    totalHabitsCount > 0
+      ? Math.round((completedTodayCount / totalHabitsCount) * 100)
+      : 0;
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-purple-500 mb-4" />
-        <p className="text-slate-500 font-medium animate-pulse">Loading habits...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-brand mb-4" />
+        <p className="text-muted font-bold animate-pulse">
+          Loading your Neural Habit Matrix...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2 flex items-center gap-3">
-            <TrendingUp className="text-purple-500" />
-            Habit Tracker
-          </h1>
-          <p className="text-slate-500">Build consistency step-by-step. Track your daily routines for the current week.</p>
+    <div className="space-y-8 pb-20 max-w-5xl mx-auto">
+      {/* Neural Habit Matrix Overview Banner (Mobile Parity) */}
+      <div className="card-lift p-6 md:p-8 bg-linear-to-br from-[#064e3b] via-[#065f46] to-[#042f2e] text-white relative overflow-hidden shadow-lg border-none">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-emerald-400/20 text-emerald-300 rounded-full inline-flex items-center gap-1.5 border border-emerald-400/30">
+                <Flame className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                NEURAL HABIT MATRIX
+              </span>
+              <span className="text-xs font-bold text-emerald-200/80">
+                Current Week
+              </span>
+            </div>
+
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">
+              Build Lasting Consistency 🌱
+            </h1>
+            <p className="text-emerald-100/80 font-medium text-sm md:text-base mt-1 max-w-md">
+              Small atomic routines compound into emotional resilience and university success.
+            </p>
+
+            <div className="mt-4 flex items-center gap-4 text-xs font-extrabold text-emerald-200">
+              <span className="bg-emerald-900/60 px-3 py-1.5 rounded-xl border border-emerald-700/50">
+                ✅ {completedTodayCount} of {totalHabitsCount} Done Today
+              </span>
+              <span className="bg-emerald-900/60 px-3 py-1.5 rounded-xl border border-emerald-700/50">
+                ⚡ {overallPercentage}% Daily Velocity
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsAdding(!isAdding)}
+              className="px-5 py-3 rounded-2xl bg-white text-emerald-950 font-extrabold text-xs hover:bg-emerald-50 hover:scale-105 active:scale-95 transition-all duration-150 shadow-md flex items-center gap-2 cursor-pointer"
+            >
+              {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {isAdding ? "Cancel" : "Add Habit"}
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setIsAdding(!isAdding)}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
-        >
-          {isAdding ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-          {isAdding ? "Cancel" : "Add Custom Habit"}
-        </button>
       </div>
 
+      {/* Add Custom Habit Form Card */}
       {isAdding && (
-        <div className="bg-white p-6 rounded-3xl border border-purple-100 shadow-sm mb-8 animate-in slide-in-from-top-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -z-10" />
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-purple-500" /> Create New Habit
+        <div className="card-lift p-6 md:p-8 bg-white border-2 border-brand/20 shadow-md">
+          <h3 className="text-base font-black text-ink mb-1 flex items-center gap-2">
+            <Target className="w-5 h-5 text-brand" /> Create New Habit
           </h3>
-          <form onSubmit={handleAddHabit} className="flex flex-col md:flex-row gap-4 items-start">
-            <div className="flex-1 w-full">
-              <input
-                type="text"
-                value={newHabitName}
-                onChange={(e) => setNewHabitName(e.target.value)}
-                placeholder="e.g., Drink 2L Water"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-medium"
-                required
-              />
+          <p className="text-xs text-muted mb-4">
+            Pick a routine that supports your physical or mental well-being
+          </p>
+
+          <form onSubmit={handleAddHabit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-extrabold text-ink uppercase tracking-wider mb-1">
+                  Habit Name
+                </label>
+                <input
+                  type="text"
+                  value={newHabitName}
+                  onChange={(e) => setNewHabitName(e.target.value)}
+                  placeholder="e.g. 10m Box Breathing, Drink 2L Water"
+                  className="input-field w-full"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-ink uppercase tracking-wider mb-1">
+                  Category
+                </label>
+                <div className="flex gap-1.5">
+                  {["Mind", "Health", "Fitness", "Sleep"].map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        selectedCategory === cat
+                          ? "bg-brand text-white shadow-xs"
+                          : "bg-cream/60 border border-cream-dark text-muted"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="w-full md:w-auto">
-              <div className="flex flex-wrap gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                {AVAILABLE_ICONS.map(icon => (
+
+            <div>
+              <label className="block text-xs font-extrabold text-ink uppercase tracking-wider mb-1.5">
+                Choose an Icon
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {AVAILABLE_ICONS.map((icon) => (
                   <button
                     key={icon}
                     type="button"
                     onClick={() => setSelectedIcon(icon)}
-                    className={`p-2 rounded-lg transition-colors ${selectedIcon === icon ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-500 ring-inset' : 'text-slate-500 hover:bg-slate-200'}`}
+                    className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                      selectedIcon === icon
+                        ? "bg-brand text-white shadow-xs scale-110 ring-2 ring-brand-300"
+                        : "bg-cream/60 border border-cream-dark text-muted hover:bg-white"
+                    }`}
                   >
-                    <RenderIcon name={icon} className="w-5 h-5" />
+                    <RenderIcon name={icon} className="w-4 h-4" />
                   </button>
                 ))}
               </div>
             </div>
-            <button type="submit" className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-semibold transition-colors shrink-0">
-              Save Habit
-            </button>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAdding(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-muted hover:text-ink cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary text-xs py-2 px-5 cursor-pointer">
+                Save to Matrix ✨
+              </button>
+            </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        {/* Header Row: Days of Week */}
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr] bg-slate-50/80 border-b border-slate-100 p-4 gap-4 sticky top-0 z-10">
-          <div className="font-semibold text-slate-600 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-slate-400" /> Current Week
+      {/* Category Filter Pills (From Mobile Version) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {CATEGORIES.map((cat) => {
+          const isActive = activeCategoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategoryFilter(cat)}
+              className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                isActive
+                  ? "bg-brand text-white shadow-sm scale-105"
+                  : "bg-white border-2 border-cream-dark text-muted hover:text-ink hover:border-slate-300"
+              }`}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Habits Grid Table */}
+      <div className="card-lift bg-white overflow-hidden p-0">
+        {/* Table Header: Current Week Days */}
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr] bg-cream/40 border-b-2 border-cream-dark p-4 gap-4 items-center">
+          <div className="font-extrabold text-xs text-muted uppercase tracking-wider flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-brand" /> Routine
           </div>
+
           <div className="hidden md:grid grid-cols-7 gap-2 items-center text-center">
-            {weekDays.map(date => (
+            {weekDays.map((date) => (
               <div key={date.toISOString()} className="flex flex-col items-center">
-                <span className="text-xs font-bold text-slate-400 uppercase">{format(date, 'EEE')}</span>
-                <span className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full mt-1 ${isSameDay(date, today) ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-700'}`}>
-                  {format(date, 'd')}
+                <span className="text-[10px] font-black text-muted uppercase tracking-wider">
+                  {format(date, "EEE")}
+                </span>
+                <span
+                  className={`text-xs font-black w-7 h-7 flex items-center justify-center rounded-xl mt-0.5 ${
+                    isSameDay(date, today)
+                      ? "bg-brand text-white shadow-xs"
+                      : "text-ink bg-white border border-cream-dark"
+                  }`}
+                >
+                  {format(date, "d")}
                 </span>
               </div>
             ))}
           </div>
-          <div className="hidden md:block text-right font-semibold text-slate-600 pr-4">Progress</div>
+
+          <div className="hidden md:block text-right font-extrabold text-xs text-muted uppercase tracking-wider pr-4">
+            Progress
+          </div>
         </div>
 
-        {/* Habit List */}
-        <div className="divide-y divide-slate-100">
-          {habits.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 font-medium">
-              You aren't tracking any habits yet. Start by adding one above!
+        {/* Habit Rows */}
+        <div className="divide-y-2 divide-cream-dark/40">
+          {filteredHabits.length === 0 ? (
+            <div className="p-12 text-center text-muted font-bold">
+              <span className="text-3xl mb-2 block">🌿</span>
+              No habits found in this category. Start by adding one above!
             </div>
           ) : (
-            habits.map((habit) => {
+            filteredHabits.map((habit) => {
               const completion = calculateCompletion(habit._id);
               const streak = calculateStreak(habit._id);
-              
+
               return (
-                <div key={habit._id} className="p-4 grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr] gap-4 items-center group hover:bg-slate-50/50 transition-colors">
+                <div
+                  key={habit._id}
+                  className="p-4 grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr] gap-4 items-center group hover:bg-cream/20 transition-colors"
+                >
                   {/* Habit Info */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-                      <RenderIcon name={habit.icon} className="w-5 h-5 text-purple-600" />
+                    <div className="w-10 h-10 rounded-2xl bg-brand-light flex items-center justify-center shrink-0 text-brand">
+                      <RenderIcon name={habit.icon} className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-slate-800 truncate pr-2">{habit.name}</h4>
-                      <div className="flex items-center gap-1 text-xs font-medium text-orange-500 mt-0.5">
-                        <Flame className="w-3.5 h-3.5" /> {streak} day streak
+                      <h4 className="font-extrabold text-sm text-ink truncate pr-2">
+                        {habit.name}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <Flame className="w-3 h-3 fill-amber-500 text-amber-500" />
+                          {streak}d streak
+                        </span>
+                        {habit.category && (
+                          <span className="text-[10px] font-bold text-muted uppercase">
+                            • {habit.category}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {!habit.isDefault && (
-                      <button onClick={() => handleDeleteHabit(habit._id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0">
+                      <button
+                        onClick={() => handleDeleteHabit(habit._id)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-muted hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0 cursor-pointer"
+                        title="Remove habit"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
 
-                  {/* Mobile Days Label (Visible only on mobile) */}
-                  <div className="md:hidden flex justify-between px-2 mb-2">
-                    {weekDays.map(date => (
-                      <span key={`m-${date.toISOString()}`} className={`text-[10px] font-bold uppercase ${isSameDay(date, today) ? 'text-purple-600' : 'text-slate-400'}`}>
-                        {format(date, 'EE')}
-                      </span>
-                    ))}
-                  </div>
-
                   {/* Checkbox Strip */}
                   <div className="flex justify-between md:grid md:grid-cols-7 gap-2 px-2 md:px-0">
-                    {weekDays.map(date => {
-                      const dateStr = format(date, 'yyyy-MM-dd');
-                      const log = logs.find(l => l.habit === habit._id && format(parseISO(l.date), 'yyyy-MM-dd') === dateStr);
+                    {weekDays.map((date) => {
+                      const dateStr = format(date, "yyyy-MM-dd");
+                      const log = logs.find(
+                        (l) =>
+                          l.habit === habit._id &&
+                          format(parseISO(l.date), "yyyy-MM-dd") === dateStr,
+                      );
                       const isCompleted = log?.completed;
                       const isFuture = date > today;
-                      
+
                       return (
                         <div key={dateStr} className="flex justify-center">
                           <button
                             disabled={isFuture}
                             onClick={() => handleToggleLog(habit._id, date)}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
-                              isFuture ? 'opacity-30 cursor-not-allowed bg-slate-100' :
-                              isCompleted 
-                                ? 'bg-purple-600 text-white shadow-md shadow-purple-200 scale-110' 
-                                : 'bg-slate-100 text-slate-300 hover:bg-slate-200 hover:text-slate-400'
+                            title={`${format(date, "EEE, MMM dd")}: ${
+                              isCompleted ? "Completed" : "Not yet"
+                            }`}
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 cursor-pointer ${
+                              isFuture
+                                ? "opacity-30 cursor-not-allowed bg-cream/40"
+                                : isCompleted
+                                  ? "bg-emerald-500 text-white shadow-sm scale-105 ring-2 ring-emerald-300"
+                                  : "bg-cream/60 border border-cream-dark text-muted/40 hover:bg-white hover:text-emerald-500"
                             }`}
                           >
-                            {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" strokeWidth={2.5} />}
+                            {isCompleted ? (
+                              <Check className="w-5 h-5 stroke-[3]" />
+                            ) : (
+                              <Circle className="w-4 h-4" strokeWidth={2.5} />
+                            )}
                           </button>
                         </div>
                       );
@@ -263,9 +489,14 @@ const HabitTracker = () => {
 
                   {/* Progress Stats */}
                   <div className="hidden md:flex flex-col items-end justify-center pr-4">
-                    <span className="text-lg font-bold text-slate-800">{completion}%</span>
-                    <div className="w-full max-w-[80px] bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
-                      <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${completion}%` }} />
+                    <span className="text-sm font-black text-ink">
+                      {completion}%
+                    </span>
+                    <div className="w-full max-w-[80px] bg-cream-dark rounded-full h-1.5 mt-1 overflow-hidden">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${completion}%` }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -279,3 +510,4 @@ const HabitTracker = () => {
 };
 
 export default HabitTracker;
+

@@ -17,9 +17,15 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Output directories
-artifact_dir = r"C:\Users\USER\.gemini\antigravity-ide\brain\6025d9cd-6ecd-4866-bb9a-10c5be2cf568"
+artifact_dir = r"C:\Users\USER\.gemini\antigravity-ide\brain\71045d0d-6cac-41ae-82ba-b20a1d75269a"
 os.makedirs(artifact_dir, exist_ok=True)
 models_dir = r"D:\Study\Projects\NeuroLink\models"
+
+def save_plot(filename):
+    plt.savefig(os.path.join(artifact_dir, filename), dpi=300)
+    plt.savefig(os.path.join(r"D:\Study\Projects\NeuroLink", filename), dpi=300)
+    plt.savefig(os.path.join(r"D:\Study\Projects\NeuroLink\ml-service", filename), dpi=300)
+    plt.savefig(os.path.join(r"D:\Study\Projects\NeuroLink\For ML", filename), dpi=300)
 
 # Dataset paths
 data_dir = r"D:\Study\Projects\NeuroLink\ml-service\Datasets\Datasets CSV"
@@ -109,8 +115,7 @@ ax2.set_ylim(-0.01, 1.2)
 plt.xticks(x, models)
 plt.title('Mood Prediction Model Performance Comparison (Leakage-Free)')
 fig.tight_layout()
-plt.savefig(os.path.join(artifact_dir, 'mood_comparison.png'), dpi=300)
-plt.savefig('mood_comparison.png', dpi=300)
+save_plot('mood_comparison.png')
 plt.close()
 
 # Plot Actual vs Predicted Mood Score (Linear Regression)
@@ -122,9 +127,7 @@ plt.ylabel('Predicted Mood Score')
 plt.title(f'Mood Prediction: Actual vs Predicted (R² = {lr_r2:.3f})')
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
-plt.tight_layout()
-plt.savefig(os.path.join(artifact_dir, 'mood_predictions.png'), dpi=300)
-plt.savefig('mood_predictions.png', dpi=300)
+save_plot('mood_predictions.png')
 plt.close()
 
 
@@ -187,8 +190,7 @@ for i, val in enumerate(accuracies):
     plt.text(i, val + 0.02, f"{val:.3f}", ha='center', fontweight='bold')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
-plt.savefig(os.path.join(artifact_dir, 'sentiment_comparison.png'), dpi=300)
-plt.savefig('sentiment_comparison.png', dpi=300)
+save_plot('sentiment_comparison.png')
 plt.close()
 
 # Plot Confusion Matrix
@@ -201,8 +203,7 @@ plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.title('Confusion Matrix: Best Model (Logistic Regression)')
 plt.tight_layout()
-plt.savefig(os.path.join(artifact_dir, 'sentiment_confusion_matrix.png'), dpi=300)
-plt.savefig('sentiment_confusion_matrix.png', dpi=300)
+save_plot('sentiment_confusion_matrix.png')
 plt.close()
 
 print("\n--- 3. Verifying Saved Pickle Files ---")

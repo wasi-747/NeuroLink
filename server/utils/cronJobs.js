@@ -161,6 +161,8 @@ export const generateWeeklyReports = async () => {
       console.log(
         `Successfully generated and saved report for user ${user._id}`,
       );
+      // Wait 1s between users to be gentle with AI rate limits
+      await new Promise((r) => setTimeout(r, 1000));
     } catch (error) {
       console.error(
         `Failed to generate report for user ${user._id}:`,

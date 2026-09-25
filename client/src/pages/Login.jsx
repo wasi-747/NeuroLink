@@ -39,52 +39,60 @@ const Login = () => {
         navigate("/");
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.error || "Invalid credentials. Please try again.",
-      );
+      if (!error.response || error.response.status === 502 || error.response.status === 503) {
+        toast.error("Backend server is not running on port 5000. Please start the backend.");
+      } else {
+        toast.error(
+          error.response?.data?.error || "Invalid credentials. Please try again.",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-slate-50 relative py-12 px-4">
+    <div className="min-h-[80vh] flex items-center justify-center relative py-10 px-4">
       {/* Decorative Blobs */}
-      <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-purple-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
+      <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-brand/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob pointer-events-none" />
+      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-coral/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000 pointer-events-none" />
 
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl z-10 border border-slate-100 overflow-hidden relative backdrop-blur-sm bg-white/90 my-8">
-        <div className="p-8">
+      <div className="max-w-md w-full card-lift overflow-hidden relative backdrop-blur-sm bg-white/95 my-6">
+        <div className="p-8 sm:p-10">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-100 mb-4">
-              <BrainCircuit className="w-8 h-8 text-brand-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-light mb-4 border border-brand/20 shadow-sm">
+              <BrainCircuit className="w-8 h-8 text-brand" />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl font-extrabold text-ink tracking-tight">
               Welcome Back
             </h2>
-            <p className="text-slate-500 mt-2 text-sm font-medium">
-              Sign in to continue your journey
+            <p className="text-muted mt-2 text-sm font-semibold">
+              Sign in to continue your wellness journey 🌱
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-ink mb-2">
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-muted" />
                 </div>
                 <input
                   type="email"
                   {...register("email")}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.email ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-brand-500"} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-white border-2 ${
+                    errors.email
+                      ? "border-coral focus:border-coral"
+                      : "border-cream-dark focus:border-brand"
+                  } rounded-2xl text-ink font-medium focus:outline-none transition-all placeholder:text-muted/60`}
                   placeholder="name@student.edu"
                 />
               </div>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-500 font-medium">
+                <p className="mt-2 text-xs text-coral font-bold">
                   {errors.email.message}
                 </p>
               )}
@@ -92,29 +100,33 @@ const Login = () => {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-semibold text-slate-700">
+                <label className="block text-sm font-bold text-ink">
                   Password
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-sm font-medium text-brand-600 hover:text-brand-700"
+                  className="text-xs font-bold text-brand hover:text-brand-dark transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-muted" />
                 </div>
                 <input
                   type="password"
                   {...register("password")}
-                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border ${errors.password ? "border-red-300 focus:ring-red-500" : "border-slate-200 focus:ring-brand-500"} rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                  className={`w-full pl-11 pr-4 py-3 bg-white border-2 ${
+                    errors.password
+                      ? "border-coral focus:border-coral"
+                      : "border-cream-dark focus:border-brand"
+                  } rounded-2xl text-ink font-medium focus:outline-none transition-all placeholder:text-muted/60`}
                   placeholder="••••••••"
                 />
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-500 font-medium">
+                <p className="mt-2 text-xs text-coral font-bold">
                   {errors.password.message}
                 </p>
               )}
@@ -123,7 +135,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-4 rounded-xl mt-6 transition-all shadow-md hover:shadow-lg disabled:opacity-70 flex justify-center items-center gap-2"
+              className="w-full btn-primary py-3.5 text-base rounded-2xl mt-6 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -136,11 +148,21 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm font-medium text-slate-600">
+          {/* Quick Demo Credentials Tip */}
+          <div className="mt-6 p-3 bg-cream/60 border border-cream-dark rounded-xl text-center">
+            <p className="text-xs font-bold text-ink/70">
+              Demo Account: <span className="font-mono text-brand font-extrabold">student1@test.edu</span>
+            </p>
+            <p className="text-xs text-muted font-medium">
+              Password: <span className="font-mono font-bold text-ink">password123</span>
+            </p>
+          </div>
+
+          <p className="mt-6 text-center text-sm font-bold text-muted">
             Don't have an account?{" "}
             <Link
               to="/register"
-              className="text-brand-600 hover:text-brand-700 font-semibold transition-colors"
+              className="text-brand hover:text-brand-dark font-extrabold transition-colors underline underline-offset-2"
             >
               Create account
             </Link>

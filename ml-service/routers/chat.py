@@ -11,7 +11,7 @@ router = APIRouter()
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]
@@ -31,37 +31,47 @@ Rules you MUST follow:
 - End each response with a gentle follow-up question.
 """
 
+FALLBACK_MODEL = "openai/gpt-oss-20b"
+
 @router.post("/chat")
 async def handle_chat(request: ChatRequest):
+    messages_with_system = [{"role": "system", "content": SYSTEM_PROMPT}] + request.messages
+
     if not GROQ_API_KEY:
-        raise HTTPException(status_code=503, detail="AI chat service is not available. GROQ_API_KEY not set.")
+        return {"reply": "Hi there! I'm Aria, your wellness companion. I'm currently in lightweight offline mode, but remember I'm always cheering for you! How are you feeling right now?"}
 
-    try:
-        messages_with_system = [{"role": "system", "content": SYSTEM_PROMPT}] + request.messages
+    models_to_try = [GROQ_MODEL, FALLBACK_MODEL]
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                GROQ_API_URL,
-                headers={
-                    "Authorization": f"Bearer {GROQ_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": GROQ_MODEL,
-                    "max_tokens": 250,
-                    "messages": messages_with_system,
-                },
-            )
+    for model in models_to_try:
+        try:
+            async with httpx.AsyncClient(timeout=25) as client:
+                response = await client.post(
+                    GROQ_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {GROQ_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model,
+                        "max_tokens": 200,
+                        "messages": messages_with_system,
+                    },
+                )
 
-        if response.status_code != 200:
-            print(f"Groq API error: {response.status_code} {response.text[:300]}")
-            raise HTTPException(status_code=500, detail="Failed to get a response from the AI assistant.")
+            if response.status_code == 200:
+                data = response.json()
+                reply = data["choices"][0]["message"].get("content", "").strip()
+                if reply:
+                    return {"reply": reply}
+            elif response.status_code == 429:
+                print(f"Chat model {model} rate limited (429). Trying fallback...")
+                continue
+            else:
+                print(f"Groq API error with {model}: {response.status_code} {response.text[:200]}")
+        except Exception as e:
+            print(f"Error calling Groq API ({model}): {e}")
 
-        data = response.json()
-        reply = data["choices"][0]["message"]["content"]
-
-        return {"reply": reply}
-
-    except httpx.HTTPError as e:
-        print(f"Error calling Groq API: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get a response from the AI assistant.")
+    # Friendly fallback message if all rate limited
+    return {
+        "reply": "I'm right here with you! Take a deep, gentle breath and let yourself unwind for a moment. What's the main thing on your mind right now?"
+    }

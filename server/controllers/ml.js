@@ -213,34 +213,115 @@ export const getRecommendations = asyncHandler(async (req, res, next) => {
 // @desc    Proxy chat requests to the ML service
 // @route   POST /api/ml/chat
 // @access  Private
+const ARIA_SYSTEM_PROMPT = `You are NeuroLink's AI wellness companion for university students.
+Your name is Aria. You are warm, empathetic, validating, and non-judgmental.
+
+Rules you MUST follow:
+- Never diagnose any mental health condition or prescribe medications.
+- If a user expresses suicidal thoughts, self-harm, or severe crisis, immediately respond with compassionate emergency helplines:
+  * Bangladesh: Kaan Pete Roi at +8801779554391 or Emergency at 999 / 16773.
+  * International: Call or text 988 (US/Canada), 111 (UK).
+- Always remind users you are an AI companion, not a licensed therapist.
+- Keep responses concise, warm, and helpful (under 160 words).
+- When helpful, suggest grounding exercises (e.g. 4-7-8 breath, 5-4-3-2-1 senses reset).
+- End with a gentle, supportive question.`;
+
+// @desc    Proxy chat requests to the ML service with Groq & rule-based fallbacks
+// @route   POST /api/ml/chat
+// @access  Private
 export const proxyChat = asyncHandler(async (req, res, next) => {
   const { messages, user_context } = req.body;
 
-  if (!messages) {
+  if (!messages || !Array.isArray(messages)) {
     return next(new ErrorResponse("Messages are required", 400));
   }
 
-  if (!process.env.ML_SERVICE_URL) {
-    return next(new ErrorResponse("Chat service is not configured", 500));
+  // 1. Try FastAPI ML Service if configured
+  if (process.env.ML_SERVICE_URL) {
+    try {
+      const response = await axios.post(
+        `${process.env.ML_SERVICE_URL}/api/ml/chat`,
+        { messages, user_context },
+        { timeout: 8000 }
+      );
+      if (response.data?.reply) {
+        return res.status(200).json(response.data);
+      }
+    } catch (error) {
+      console.warn("ML Service unavailable, falling back to direct LLM:", error.message);
+    }
   }
 
-  try {
-    const response = await axios.post(
-      `${process.env.ML_SERVICE_URL}/api/ml/chat`,
-      {
-        messages,
-        user_context,
-      },
-      {
-        timeout: 60000, // 60-second timeout
-      },
-    );
+  // 2. Direct Groq fallback if GROQ_API_KEY is available
+  if (process.env.GROQ_API_KEY) {
+    const groqModels = ["qwen/qwen3.8-27b", "openai/gpt-oss-20b"];
+    const formattedMessages = [
+      { role: "system", content: ARIA_SYSTEM_PROMPT },
+      ...messages.slice(-8), // Keep context window efficient
+    ];
 
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error proxying chat request to ML service:", error.message);
-    return next(
-      new ErrorResponse("Failed to get a response from the AI assistant.", 500),
-    );
+    for (const model of groqModels) {
+      try {
+        const groqRes = await axios.post(
+          "https://api.groq.com/openai/v1/chat/completions",
+          {
+            model,
+            max_tokens: 220,
+            temperature: 0.7,
+            messages: formattedMessages,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            timeout: 10000,
+          }
+        );
+
+        const reply = groqRes.data?.choices?.[0]?.message?.content;
+        if (reply) {
+          return res.status(200).json({ reply, modelUsed: model });
+        }
+      } catch (err) {
+        console.warn(`Groq model ${model} failed:`, err.response?.data?.error?.message || err.message);
+      }
+    }
   }
+
+  // 3. Empathetic rule-based fallback if offline/rate-limited
+  const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() || "";
+
+  // Crisis detection
+  if (
+    /suicid|kill myself|die|end my life|hurt myself|self harm|hanging|overdose|jump/.test(
+      lastUserMsg
+    )
+  ) {
+    return res.status(200).json({
+      reply:
+        "I hear how much pain you're in, and I want you to know you are not alone. Please reach out to someone who can help right now. You can call or text the Suicide & Crisis Lifeline at 988 (US/Canada), call 111 (UK), or in Bangladesh call Kaan Pete Roi at +8801779554391 or 999. Please connect with them—there is hope and support available for you.",
+      isCrisis: true,
+    });
+  }
+
+  if (/anxio|panic|stress|overwhelm|scared/.test(lastUserMsg)) {
+    return res.status(200).json({
+      reply:
+        "I'm right here with you. When anxiety spikes, your nervous system is trying to protect you, but we can signal safety together. Let's do a simple 4-4-6 breath: inhale slowly through your nose for 4 seconds, hold gently for 4, and exhale smoothly through your mouth for 6. Would you like to try one round together?",
+    });
+  }
+
+  if (/sleep|tired|insomnia|bed|exhaust/.test(lastUserMsg)) {
+    return res.status(200).json({
+      reply:
+        "Resting can be so challenging when your mind is racing with academic deadlines or worries. Try releasing the tension in your jaw, dropping your shoulders down, and placing a soft hand on your chest. You don't have to force sleep right now—just resting your eyes and body is restorative. How is your room's lighting right now?",
+    });
+  }
+
+  // General warm empathetic fallback
+  return res.status(200).json({
+    reply:
+      "Thank you for sharing that with me. Academic life and daily stressors can feel really heavy, but taking a moment to acknowledge your feelings is a courageous first step. Remember to be gentle with yourself today. What is one small, kind thing you could do for yourself in the next hour?",
+  });
 });

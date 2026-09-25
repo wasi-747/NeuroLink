@@ -9,7 +9,14 @@ import {
   BookOpen,
   Filter,
   CheckCircle,
+  GraduationCap,
+  Sparkles,
+  ArrowUpRight,
+  Award,
 } from "lucide-react";
+
+// Aligned with mobile CoursesScreen.jsx
+const CATEGORIES = ["All", "Stress", "Anxiety", "Sleep", "Mindfulness"];
 
 const CourseCatalog = () => {
   const [courses, setCourses] = useState([]);
@@ -33,7 +40,6 @@ const CourseCatalog = () => {
       }
     };
 
-    // Debounce search slightly
     const timer = setTimeout(() => {
       fetchCourses();
     }, 300);
@@ -41,169 +47,173 @@ const CourseCatalog = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, category]);
 
-  const categories = ["All", "Anxiety", "Stress", "Sleep", "Mindfulness"];
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 animate-in fade-in duration-500">
-      <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-          Wellness{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-indigo-600">
-            Masterclasses
-          </span>
-        </h1>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-          Evidence-based courses to help you build resilience, manage stress,
-          and thrive.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/courses/learning-path"
-            className="inline-block bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            View Your Personalized Learning Path
-          </Link>
+    <div className="max-w-7xl mx-auto pb-20 space-y-8 animate-in fade-in duration-400">
+      {/* Hero Banner (Mobile Courses Screen Parity) */}
+      <div className="card-lift p-6 md:p-10 bg-linear-to-br from-[#3b0764] via-[#581c87] to-[#1e1b4b] text-white relative overflow-hidden shadow-lg border-none">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+          <GraduationCap className="w-64 h-64 text-white" />
+        </div>
+
+        <div className="relative z-10 md:w-3/4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-purple-400/20 text-purple-200 rounded-full inline-flex items-center gap-1.5 border border-purple-400/30">
+              <GraduationCap className="w-3.5 h-3.5 text-purple-300" />
+              EVIDENCE-BASED MASTERCLASSES
+            </span>
+            <span className="text-xs font-bold text-purple-200/80 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> Self-Paced Modules
+            </span>
+          </div>
+
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 text-white">
+            Psychoeducation & Growth 🎓
+          </h1>
+          <p className="text-purple-100/90 text-sm md:text-base font-medium leading-relaxed mb-6 max-w-2xl">
+            Interactive bite-sized courses designed by neuroscientists to rewire anxiety, conquer exam stress, and master deep sleep.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/courses/learning-path"
+              className="px-5 py-2.5 bg-white text-purple-950 font-extrabold text-xs rounded-xl hover:bg-purple-50 transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
+            >
+              <span>Personalized Learning Path</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 mb-10">
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-slate-400" />
+      {/* Category Pills (Mobile Parity) & Search */}
+      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        {/* Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {CATEGORIES.map((cat) => {
+            const isActive = category === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-150 shrink-0 cursor-pointer ${
+                  isActive
+                    ? "bg-brand text-white shadow-sm scale-105"
+                    : "bg-white border-2 border-cream-dark text-muted hover:text-ink hover:border-slate-300"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative md:w-80">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-muted" />
           </div>
           <input
             type="text"
-            className="block w-full pl-12 pr-4 py-4 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-medium text-slate-800 placeholder:text-slate-400"
-            placeholder="Search for courses, topics, or instructors..."
+            className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-cream-dark rounded-2xl focus:border-brand font-medium text-xs text-ink placeholder:text-muted/60 outline-none"
+            placeholder="Search topic or instructor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          <Filter className="w-5 h-5 text-slate-400 mr-2 shrink-0" />
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all border-2 ${
-                category === cat
-                  ? "bg-slate-900 border-slate-900 text-white shadow-md"
-                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
       </div>
 
+      {/* Courses List */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-3xl h-[450px] shadow-sm border border-slate-100 overflow-hidden animate-pulse"
-            >
-              <div className="h-48 bg-slate-200" />
-              <div className="p-6 space-y-4">
-                <div className="h-4 bg-slate-200 rounded w-1/4" />
-                <div className="h-6 bg-slate-200 rounded w-3/4" />
-                <div className="h-4 bg-slate-200 rounded w-full" />
-                <div className="h-4 bg-slate-200 rounded w-5/6" />
-              </div>
-            </div>
+              className="card-lift bg-white h-80 animate-pulse border-2 border-cream-dark"
+            />
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-          <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-slate-800 mb-2">
+        <div className="card-lift p-12 text-center bg-white border-2 border-cream-dark">
+          <BookOpen className="w-16 h-16 text-muted/60 mx-auto mb-3" />
+          <h3 className="text-lg font-black text-ink mb-1">
             No courses found
           </h3>
-          <p className="text-slate-500 font-medium">
-            Try adjusting your search or category filter.
+          <p className="text-xs text-muted max-w-sm mx-auto">
+            Try adjusting your search keyword or switching category tabs.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
             <Link
               key={course._id}
               to={`/courses/${course._id}`}
-              className="group bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+              className="card-lift bg-white border-2 border-cream-dark overflow-hidden flex flex-col group p-0"
             >
               {/* Thumbnail */}
               <div
-                className={`h-48 bg-gradient-to-br ${course.thumbnailGradient} relative overflow-hidden shrink-0`}
+                className={`h-40 bg-gradient-to-br ${
+                  course.thumbnailGradient || "from-brand-600 to-indigo-600"
+                } relative overflow-hidden shrink-0 border-b-2 border-cream-dark`}
               >
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800">
+                <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors" />
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase text-ink tracking-wider">
                   {course.level}
                 </div>
                 {course.price === 0 && (
-                  <div className="absolute top-4 right-4 bg-emerald-500 px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
+                  <div className="absolute top-3 right-3 bg-emerald-500 px-2.5 py-0.5 rounded-lg text-[10px] font-black text-white shadow-xs">
                     FREE
                   </div>
                 )}
-                {/* Decorative overlay */}
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/20 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-700" />
               </div>
 
               {/* Content */}
-              <div className="p-6 flex flex-col flex-1">
-                <div className="flex items-center gap-1 text-amber-500 mb-3">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="font-bold text-sm text-slate-700">
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex items-center gap-1 text-amber-500 mb-2">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span className="font-bold text-xs text-ink">
                     {course.rating}{" "}
-                    <span className="text-slate-400 font-medium">
-                      ({course.enrollmentCount})
+                    <span className="text-muted font-normal text-[11px]">
+                      ({course.enrollmentCount} enrolled)
                     </span>
                   </span>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-slate-900 leading-tight mb-2 group-hover:text-brand-600 transition-colors line-clamp-2">
+                <h3 className="text-base font-black text-ink leading-snug mb-1.5 group-hover:text-brand transition-colors line-clamp-2">
                   {course.title}
                 </h3>
 
-                <p className="text-slate-600 font-medium text-sm mb-6 line-clamp-2 flex-1">
+                <p className="text-muted font-medium text-xs mb-4 line-clamp-2 flex-1">
                   {course.description}
                 </p>
 
-                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 mb-6 pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" /> {course.duration}h
+                <div className="flex items-center gap-4 text-[11px] font-bold text-muted mb-4 pt-3 border-t-2 border-cream-dark/60">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-brand" /> {course.duration}h
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <BookOpen className="w-4 h-4" /> {course.lessonCount}{" "}
-                    lessons
+                  <div className="flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5 text-brand" />{" "}
+                    {course.lessonCount} lessons
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center justify-between mt-auto pt-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                      {course.instructor.name.charAt(0)}
+                    <div className="w-6 h-6 rounded-full bg-brand-light text-brand flex items-center justify-center text-[10px] font-black">
+                      {course.instructor?.name?.charAt(0) || "N"}
                     </div>
-                    <span className="text-sm font-semibold text-slate-700">
-                      {course.instructor.name}
+                    <span className="text-xs font-bold text-ink truncate max-w-[120px]">
+                      {course.instructor?.name || "Instructor"}
                     </span>
                   </div>
-                  <div className="text-right">
+                  <div>
                     {course.price > 0 ? (
-                      <div className="flex flex-col">
-                        {course.originalPrice && (
-                          <span className="text-xs text-slate-400 line-through font-semibold">
-                            ৳{course.originalPrice}
-                          </span>
-                        )}
-                        <span className="text-lg font-black text-slate-900">
-                          ৳{course.price}
-                        </span>
-                      </div>
+                      <span className="text-sm font-black text-ink">
+                        ৳{course.price}
+                      </span>
                     ) : (
-                      <span className="text-lg font-black text-emerald-600">
-                        Free
+                      <span className="text-xs font-black text-emerald-600 bg-mint/15 px-2 py-0.5 rounded-md">
+                        Free Access
                       </span>
                     )}
                   </div>
@@ -218,3 +228,4 @@ const CourseCatalog = () => {
 };
 
 export default CourseCatalog;
+

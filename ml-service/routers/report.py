@@ -11,7 +11,7 @@ router = APIRouter()
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 class ReportRequest(BaseModel):
     user_stats: Dict[str, Any]
@@ -32,11 +32,35 @@ Rules you MUST follow:
 - Write in the second person ("You...").
 """
 
+FALLBACK_MODEL = "openai/gpt-oss-20b"
+
+def generate_heuristic_report(stats: Dict[str, Any]) -> str:
+    avg_mood = stats.get('avgMood', 'Good')
+    trend = stats.get('moodTrend', 'stable')
+    habits = stats.get('habitCompletion', 0)
+    journals = stats.get('journalCount', 0)
+    gratitude = stats.get('gratitudeStreak', 0)
+    
+    return f"""### Hello! Here is your weekly wellness summary 🌱
+
+**What Went Well**
+* **Habit Consistency:** You achieved a {habits}% completion rate across your wellness habits this week. Consistency is key!
+* **Mindful Check-ins:** You logged {journals} reflective entries and maintained a {gratitude}-day gratitude streak.
+* **Mood Stability:** Your overall mood trend remained **{trend}** with an average score of {avg_mood}/5.
+
+**Areas to Focus On**
+* **Self-Compassion:** University life can get hectic. Remember to celebrate small wins each day.
+* **Balanced Routine:** Aim to keep consistent sleep and hydration habits, especially during busy study days.
+
+**Actionable Suggestions for Next Week**
+* Try a **5-minute Box Breathing exercise** before starting your main study session.
+* Log at least 3 things you are grateful for each evening to boost positive outlook.
+* Check out our guided meditation resources when feeling tension.
+
+*Remember: Take it one day at a time, you're doing great! 💜*"""
+
 @router.post("/analyze/weekly-report")
 async def generate_weekly_report(request: ReportRequest):
-    if not GROQ_API_KEY:
-        raise HTTPException(status_code=503, detail="AI report generation service is not available.")
-
     stats = request.user_stats
     
     user_message = f"""Generate a weekly wellness report for a student with these stats:
@@ -51,33 +75,44 @@ async def generate_weekly_report(request: ReportRequest):
 Please write the report based on these stats, following all the rules in the system prompt.
 """
 
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                GROQ_API_URL,
-                headers={
-                    "Authorization": f"Bearer {GROQ_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": GROQ_MODEL,
-                    "max_tokens": 400,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_message},
-                    ],
-                },
-            )
+    if not GROQ_API_KEY:
+        return {"report": generate_heuristic_report(stats)}
 
-        if response.status_code != 200:
-            print(f"Groq API error: {response.status_code} {response.text[:300]}")
-            raise HTTPException(status_code=500, detail="Failed to generate the wellness report.")
+    # Attempt with primary model, then fallback model if rate limited
+    models_to_try = [GROQ_MODEL, FALLBACK_MODEL]
 
-        data = response.json()
-        report_text = data["choices"][0]["message"]["content"]
+    for model in models_to_try:
+        try:
+            async with httpx.AsyncClient(timeout=25) as client:
+                response = await client.post(
+                    GROQ_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {GROQ_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model,
+                        "max_tokens": 250,
+                        "messages": [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": user_message},
+                        ],
+                    },
+                )
 
-        return {"report": report_text}
+            if response.status_code == 200:
+                data = response.json()
+                content = data["choices"][0]["message"].get("content", "").strip()
+                if content:
+                    return {"report": content}
+            elif response.status_code == 429:
+                print(f"Model {model} hit rate limit (429). Trying fallback...")
+                continue
+            else:
+                print(f"Groq API error with {model}: {response.status_code} {response.text[:200]}")
+        except Exception as e:
+            print(f"Error calling Groq API ({model}): {e}")
 
-    except httpx.HTTPError as e:
-        print(f"Error calling Groq API for weekly report: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate the wellness report.")
+    # If all models rate limited or unavailable, return personalized heuristic report
+    print("Falling back to intelligent heuristic wellness report generation.")
+    return {"report": generate_heuristic_report(stats)}

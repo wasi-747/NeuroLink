@@ -219,67 +219,71 @@ const Journal = () => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-[85vh] flex flex-col">
+    <div className="space-y-6 pb-20 h-[85vh] flex flex-col">
       <CrisisModal
         isOpen={isCrisisModalOpen}
         setIsOpen={setIsCrisisModalOpen}
       />
-      <div className="mb-6 shrink-0">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2 flex items-center gap-3">
-          <BookOpen className="text-blue-500" />
-          Personal Journal
+      <div className="shrink-0">
+        <h1 className="text-3xl font-extrabold tracking-tight text-ink mb-1 flex items-center gap-3">
+          <BookOpen className="text-brand" />
+          Personal Journal 📖
         </h1>
-        <p className="text-slate-500">
-          A safe space for your thoughts, reflections, and daily experiences.
+        <p className="text-muted text-sm font-medium">
+          A confidential sanctuary for your reflections, stream-of-consciousness thoughts, and emotional processing.
         </p>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
         {/* Sidebar: Entry List */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col overflow-hidden lg:col-span-1">
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <CalendarHeart className="w-5 h-5 text-blue-500" />
-              Entries
+        <div className="card-lift bg-white flex flex-col overflow-hidden lg:col-span-1 p-0">
+          <div className="p-4 border-b-2 border-cream-dark flex justify-between items-center bg-cream/40">
+            <h3 className="font-extrabold text-sm text-ink flex items-center gap-2">
+              <CalendarHeart className="w-4 h-4 text-brand" />
+              Entries ({entries.length})
             </h3>
             <button
               onClick={() => setActiveEntry(null)}
-              className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+              className="p-1.5 bg-brand-light text-brand rounded-xl hover:bg-brand hover:text-white transition-all cursor-pointer"
               title="New Entry"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {loading ? (
               <div className="flex justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-brand" />
               </div>
             ) : entries.length === 0 ? (
-              <div className="text-center p-6 text-slate-500 text-sm font-medium">
-                No entries yet. Click + to start your first one.
+              <div className="text-center p-6 text-muted text-xs font-bold">
+                No entries yet. Tap + to write your first reflection.
               </div>
             ) : (
               entries.map((entry) => (
                 <div
                   key={entry._id}
                   onClick={() => setActiveEntry(entry)}
-                  className={`p-4 rounded-xl cursor-pointer transition-all border ${
+                  className={`p-3.5 rounded-2xl cursor-pointer transition-all border-2 ${
                     activeEntry?._id === entry._id
-                      ? "bg-blue-50 border-blue-200 ring-1 ring-blue-100"
-                      : "bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                      ? "bg-brand-50 border-brand/40 shadow-xs"
+                      : "bg-white border-cream-dark hover:border-slate-300 hover:bg-cream/20"
                   }`}
                 >
                   <h4
-                    className={`font-semibold truncate ${activeEntry?._id === entry._id ? "text-blue-800" : "text-slate-800"}`}
+                    className={`font-bold text-xs truncate ${
+                      activeEntry?._id === entry._id
+                        ? "text-brand"
+                        : "text-ink"
+                    }`}
                   >
-                    {entry.title}
+                    {entry.title || "Untitled"}
                   </h4>
-                  <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      {format(parseISO(entry.createdAt), "MMM d, yyyy")}
+                  <div className="flex items-center justify-between mt-2 text-[11px] text-muted font-semibold">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {entry.createdAt ? format(parseISO(entry.createdAt), "MMM d, yyyy") : "Today"}
                     </div>
                     {getSentimentChip(entry.sentimentLabel)}
                   </div>
@@ -290,46 +294,46 @@ const Journal = () => {
         </div>
 
         {/* Main Editor Area */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col overflow-hidden lg:col-span-3">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white relative z-20">
+        <div className="card-lift bg-white flex flex-col overflow-hidden lg:col-span-3 p-0">
+          <div className="p-5 border-b-2 border-cream-dark flex items-center justify-between bg-white relative z-20">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Entry Title..."
-              className="text-2xl lg:text-3xl font-bold text-slate-800 placeholder-slate-300 border-none focus:ring-0 p-0 w-full bg-transparent outline-none"
+              className="text-2xl lg:text-3xl font-black text-ink placeholder:text-muted/50 border-none focus:ring-0 p-0 w-full bg-transparent outline-none"
             />
-            <div className="flex items-center gap-3 shrink-0 ml-4">
+            <div className="flex items-center gap-2 shrink-0 ml-4">
               {activeEntry && (
                 <button
                   onClick={() => handleDelete(activeEntry._id)}
-                  className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100"
+                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100 cursor-pointer"
                   title="Delete Entry"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md disabled:opacity-70"
+                className="btn-primary text-xs py-2 px-4 flex items-center gap-2 cursor-pointer"
               >
                 {isSaving ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : activeEntry ? (
-                  <Edit3 className="w-5 h-5" />
+                  <Edit3 className="w-4 h-4" />
                 ) : (
-                  <Save className="w-5 h-5" />
+                  <Save className="w-4 h-4" />
                 )}
-                {isSaving ? "Saving..." : activeEntry ? "Update" : "Save"}
+                {isSaving ? "Saving..." : activeEntry ? "Update" : "Save Entry"}
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50/30 relative">
+          <div className="flex-1 overflow-y-auto bg-cream/20 relative">
             <MenuBar editor={editor} />
             <div className="p-4 mx-auto max-w-4xl w-full">
-              <div className="bg-white min-h-[500px] rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="bg-white min-h-[500px] rounded-2xl border-2 border-cream-dark shadow-xs overflow-hidden">
                 <EditorContent editor={editor} />
               </div>
             </div>
@@ -341,3 +345,4 @@ const Journal = () => {
 };
 
 export default Journal;
+

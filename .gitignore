@@ -36,14 +36,16 @@ knowledge_graph.*
 
 # For folders
 For FYDP/
-For ML/
-For PMG/
 
 # Local previews
 DEVELOPER_ONBOARDING_GUIDE.html
 NEUROVERSE_PROJECT_GUIDE.html
+/*.html
+/*.png
 
-# Generated presentation
+# Generated presentation and root scratch scripts
 NeuroVerse_Final_Defense_Slides.pptx
 build_presentation.py
+/*.py
+/*.txt
 

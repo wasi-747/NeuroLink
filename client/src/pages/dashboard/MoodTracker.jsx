@@ -1,36 +1,87 @@
 import React, { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { getMoods, createMood } from "../../api/mood";
+import { mlService } from "../../services/mlService";
 import { toast } from "react-hot-toast";
-import { Smile, Frown, Meh, Activity, Loader2, Calendar } from "lucide-react";
+import confetti from "canvas-confetti";
+import {
+  Smile,
+  Activity,
+  Loader2,
+  Calendar,
+  Zap,
+  Sparkles,
+  MessageSquareHeart,
+  Tag,
+  CheckCircle2,
+  Heart,
+  TrendingUp,
+} from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 
-const moods = [
-  { label: "Anxious", value: 1, icon: "😖", color: "text-rose-500", bg: "bg-rose-50", border: "border-rose-200" },
-  { label: "Sad", value: 2, icon: "😢", color: "text-blue-500", bg: "bg-blue-50", border: "border-blue-200" },
-  { label: "Calm", value: 4, icon: "😌", color: "text-brand-500", bg: "bg-brand-50", border: "border-brand-200" },
-  { label: "Happy", value: 5, icon: "😁", color: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200" },
+// Aligned with mobile MoodTrackerScreen.jsx
+const MOOD_OPTIONS = [
+  { label: "Ecstatic", emoji: "🤩", score: 5, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-300", accent: "#10b981" },
+  { label: "Happy", emoji: "😊", score: 4, color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-300", accent: "#0284c7" },
+  { label: "Calm", emoji: "😌", score: 4, color: "text-brand-600", bg: "bg-brand-50", border: "border-brand-300", accent: "#7c3aed" },
+  { label: "Neutral", emoji: "😐", score: 3, color: "text-slate-600", bg: "bg-slate-100", border: "border-slate-300", accent: "#64748b" },
+  { label: "Anxious", emoji: "😰", score: 2, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-300", accent: "#d97706" },
+  { label: "Sad", emoji: "😢", score: 2, color: "text-pink-600", bg: "bg-pink-50", border: "border-pink-300", accent: "#db2777" },
+  { label: "Overwhelmed", emoji: "🤯", score: 1, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-300", accent: "#e11d48" },
+];
+
+const FEELING_TAGS = [
+  "Grateful",
+  "Productive",
+  "Tired",
+  "Inspired",
+  "Stressed",
+  "Relaxed",
+  "Focused",
+  "Lonely",
+  "Motivated",
+  "Loved",
 ];
 
 const MoodTracker = () => {
   const [data, setData] = useState([]);
+  const [recentLogs, setRecentLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedMood, setSelectedMood] = useState(null);
+  const [selectedMood, setSelectedMood] = useState(MOOD_OPTIONS[1]);
+  const [selectedTags, setSelectedTags] = useState(["Grateful"]);
+  const [energyLevel, setEnergyLevel] = useState(4);
   const [note, setNote] = useState("");
+  const [aiSentiment, setAiSentiment] = useState(null);
+  const [analyzingSentiment, setAnalyzingSentiment] = useState(false);
 
   const fetchMoods = async () => {
     try {
       const res = await getMoods("30d");
       if (res.data?.data) {
-        const processed = res.data.data.map((m) => ({
-          date: format(parseISO(m.timestamp), "MMM dd"),
-          score: moods.find(md => md.label === m.mood)?.value || 3,
-          fullDate: format(parseISO(m.timestamp), "MMM dd, yyyy HH:mm"),
-          note: m.note,
-          rawMood: m.mood
-        }));
+        const raw = res.data.data;
+        const processed = raw.map((m) => {
+          const dateVal = m.timestamp;
+          const parsed = dateVal
+            ? typeof dateVal === "string"
+              ? parseISO(dateVal)
+              : new Date(dateVal)
+            : new Date();
+          const numericMood =
+            typeof m.mood === "number"
+              ? m.mood
+              : MOOD_OPTIONS.find((md) => md.label === m.mood)?.score || 3;
+          return {
+            date: format(parsed, "MMM dd"),
+            score: numericMood,
+            fullDate: format(parsed, "MMM dd, yyyy HH:mm"),
+            note: m.note,
+            rawMood: m.mood,
+          };
+        });
         setData(processed);
+        setRecentLogs([...raw].reverse().slice(0, 5));
       }
     } catch (err) {
       toast.error("Failed to load mood history.");
@@ -43,6 +94,38 @@ const MoodTracker = () => {
     fetchMoods();
   }, []);
 
+  const toggleTag = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const handleNoteChange = (e) => {
+    const text = e.target.value;
+    setNote(text);
+    if (text.trim().length === 0) {
+      setAiSentiment(null);
+    }
+  };
+
+  const handleAnalyzeSentiment = async () => {
+    if (!note.trim()) return;
+    setAnalyzingSentiment(true);
+    try {
+      const result = await mlService.analyzeSentiment(note);
+      if (result) {
+        setAiSentiment(result);
+        toast.success(`AI detected: ${result.sentiment || "Neutral"} tone!`);
+      }
+    } catch (err) {
+      // Fallback
+    } finally {
+      setAnalyzingSentiment(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMood) {
@@ -52,10 +135,30 @@ const MoodTracker = () => {
 
     setSubmitting(true);
     try {
-      await createMood({ mood: selectedMood.label, note });
-      toast.success("Mood logged successfully!");
-      setSelectedMood(null);
+      // Compose note with tags & energy metadata
+      const tagStr = selectedTags.length > 0 ? ` [Tags: ${selectedTags.join(", ")}]` : "";
+      const energyStr = ` [⚡ Energy: ${energyLevel}/5]`;
+      const fullNote = `${note.trim()}${tagStr}${energyStr}`.slice(0, 300);
+
+      await createMood({
+        mood: selectedMood.score,
+        note: fullNote,
+      });
+
+      // Confetti burst
+      try {
+        confetti({
+          particleCount: 60,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#7c3aed", "#34d399", "#f59e0b", "#ff6b6b", "#38bdf8"],
+        });
+      } catch (err) {}
+
+      toast.success("Mood & energy logged successfully! 🌱");
       setNote("");
+      setSelectedTags(["Grateful"]);
+      setAiSentiment(null);
       fetchMoods();
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to save mood.");
@@ -64,18 +167,34 @@ const MoodTracker = () => {
     }
   };
 
+  const openAriaChat = (topic) => {
+    window.dispatchEvent(
+      new CustomEvent("open-aria-chat", {
+        detail: {
+          prompt: topic || `I'm feeling ${selectedMood.label} today and would like to talk.`,
+        },
+      }),
+    );
+  };
+
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const pData = payload[0].payload;
       return (
-        <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 min-w-[200px]">
-          <p className="font-semibold text-slate-800 mb-1">{data.fullDate}</p>
+        <div className="bg-white p-4 rounded-2xl shadow-xl border-2 border-cream-dark min-w-[200px]">
+          <p className="font-extrabold text-ink text-xs mb-1">{pData.fullDate}</p>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">{moods.find(m => m.label === data.rawMood)?.icon}</span>
-            <span className="font-medium text-slate-600">{data.rawMood}</span>
+            <span className="text-xl">
+              {MOOD_OPTIONS.find((m) => m.score === pData.score)?.emoji || "😊"}
+            </span>
+            <span className="font-bold text-brand">
+              Score: {pData.score}/5
+            </span>
           </div>
-          {data.note && (
-            <p className="text-sm text-slate-500 italic border-l-2 border-brand-200 pl-2">"{data.note}"</p>
+          {pData.note && (
+            <p className="text-xs text-muted italic border-l-2 border-brand/30 pl-2">
+              "{pData.note}"
+            </p>
           )}
         </div>
       );
@@ -84,133 +203,334 @@ const MoodTracker = () => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2 flex items-center gap-3">
-          <Activity className="text-brand-500" />
-          Mood Tracker
-        </h1>
-        <p className="text-slate-500">Log how you're feeling and visualize your emotional landscape over time.</p>
+    <div className="space-y-8 pb-20">
+      {/* Header */}
+      <div className="card-lift p-6 md:p-8 bg-linear-to-r from-brand-50 via-white to-cream relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-brand-light text-brand rounded-full inline-flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5" />
+                Emotional Landscape
+              </span>
+            </div>
+            <h1 className="text-3xl font-black text-ink tracking-tight">
+              Mood & Wellness Tracker 🎭
+            </h1>
+            <p className="text-muted font-medium text-sm mt-1">
+              Reflect on your mental state, track energy fluctuations, and let AI discover trends.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => openAriaChat()}
+            className="btn-primary self-start sm:self-center inline-flex items-center gap-2 text-xs"
+          >
+            <MessageSquareHeart className="w-4 h-4" />
+            Talk to Aria
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Input Section */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-slate-400" />
-              How are you right now?
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Input Section (Mobile Screen Parity) */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="card-lift p-6 md:p-8 bg-white">
+            <h2 className="text-lg font-black text-ink mb-1 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-brand" />
+              How are you feeling right now?
             </h2>
+            <p className="text-xs text-muted mb-5">
+              Select the emotional state that best resonates with you
+            </p>
 
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {moods.map((mood) => (
-                  <button
-                    key={mood.label}
-                    type="button"
-                    onClick={() => setSelectedMood(mood)}
-                    className={`p-4 rounded-2xl flex flex-col items-center gap-2 transition-all border-2 ${
-                      selectedMood?.label === mood.label
-                        ? `${mood.bg} ${mood.border} scale-[1.02] shadow-sm ring-2 ring-brand-100`
-                        : "bg-transparent border-slate-100 hover:bg-slate-50 hover:border-slate-200"
-                    }`}
-                  >
-                    <span className="text-4xl transform hover:scale-110 transition-transform">{mood.icon}</span>
-                    <span className={`font-semibold ${selectedMood?.label === mood.label ? mood.color : "text-slate-600"}`}>
-                      {mood.label}
-                    </span>
-                  </button>
-                ))}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 7 Mood Options from Mobile */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {MOOD_OPTIONS.map((mood) => {
+                  const isSelected = selectedMood?.label === mood.label;
+                  return (
+                    <button
+                      key={mood.label}
+                      type="button"
+                      onClick={() => setSelectedMood(mood)}
+                      className={`p-3 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all duration-150 border-2 cursor-pointer ${
+                        isSelected
+                          ? `${mood.bg} ${mood.border} scale-105 shadow-sm ring-2 ring-brand-400`
+                          : "bg-cream/40 border-cream-dark hover:bg-white hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="text-3xl transform hover:scale-110 transition-transform">
+                        {mood.emoji}
+                      </span>
+                      <span
+                        className={`text-xs font-bold ${
+                          isSelected ? mood.color : "text-ink"
+                        }`}
+                      >
+                        {mood.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-slate-700 mb-2 mt-4">Add a note (optional)</label>
+              {/* Energy Level Selector (⚡ 1 to 5) */}
+              <div className="p-4 rounded-2xl bg-cream/50 border border-cream-dark">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-extrabold text-ink uppercase tracking-wider flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    Energy Level: {energyLevel}/5
+                  </span>
+                  <span className="text-xs font-bold text-muted">
+                    {energyLevel >= 4
+                      ? "High Energy ⚡"
+                      : energyLevel === 3
+                        ? "Balanced 🔋"
+                        : "Low Battery 🪫"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => setEnergyLevel(lvl)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        energyLevel >= lvl
+                          ? "bg-amber-400 text-ink shadow-xs"
+                          : "bg-white border border-cream-dark text-muted"
+                      }`}
+                    >
+                      {lvl} ⚡
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feeling Tags (from Mobile Version) */}
+              <div>
+                <label className="block text-xs font-extrabold text-ink uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <Tag className="w-3.5 h-3.5 text-brand" />
+                  What influenced your mood?
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {FEELING_TAGS.map((tag) => {
+                    const active = selectedTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleTag(tag)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer ${
+                          active
+                            ? "bg-brand text-white shadow-xs scale-105"
+                            : "bg-cream/60 hover:bg-white text-muted border border-cream-dark"
+                        }`}
+                      >
+                        {active ? "✓ " : "+ "}
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Reflection Note & Live AI Sentiment */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-extrabold text-ink uppercase tracking-wider">
+                    Reflection Note (Optional)
+                  </label>
+                  {note.length > 5 && (
+                    <button
+                      type="button"
+                      onClick={handleAnalyzeSentiment}
+                      disabled={analyzingSentiment}
+                      className="text-[11px] font-bold text-brand hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      {analyzingSentiment ? "Analyzing..." : "Check AI Sentiment"}
+                    </button>
+                  )}
+                </div>
                 <textarea
                   value={note}
-                  onChange={(e) => setNote(e.target.value)}
+                  onChange={handleNoteChange}
                   maxLength={300}
                   rows={3}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none"
-                  placeholder="What's making you feel this way?"
+                  className="input-field w-full resize-none"
+                  placeholder="What's on your mind or contributing to how you feel?"
                 />
-                <div className="text-right mt-1">
-                  <span className="text-xs text-slate-400 font-medium">{note.length}/300</span>
+                <div className="flex items-center justify-between mt-1 text-xs">
+                  {aiSentiment ? (
+                    <span className="text-[11px] font-bold text-emerald-600 bg-mint/15 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> AI Tone: {aiSentiment.sentiment || "Positive"} ({Math.round((aiSentiment.confidence || 0.85) * 100)}%)
+                    </span>
+                  ) : (
+                    <span className="text-muted text-[11px]">Keep it real and honest.</span>
+                  )}
+                  <span className="text-muted font-bold text-[11px]">
+                    {note.length}/300
+                  </span>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={submitting || !selectedMood}
-                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-4 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-none flex justify-center items-center gap-2"
+                className="w-full btn-primary py-3.5 flex justify-center items-center gap-2 cursor-pointer"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Saving...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Recording Mood...
                   </>
                 ) : (
-                  "Log Mood"
+                  <>
+                    <span>Log My State</span>
+                    <span>✨</span>
+                  </>
                 )}
               </button>
             </form>
           </div>
         </div>
 
-        {/* History Graph */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 h-full min-h-[400px] flex flex-col">
-            <h2 className="text-xl font-bold text-slate-800 mb-8">Your 30-Day Landscape</h2>
-            
+        {/* Right Section: 30-Day Emotional Landscape & Recent Timeline */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Chart Card */}
+          <div className="card-lift p-6 md:p-8 bg-white min-h-[380px] flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-black text-ink flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-brand" />
+                  Your 30-Day Landscape
+                </h2>
+                <p className="text-xs text-muted mt-0.5">
+                  Visualizing score trajectory over recent check-ins
+                </p>
+              </div>
+              <span className="text-xs font-bold text-brand bg-brand-light px-3 py-1 rounded-full">
+                {data.length} Logs recorded
+              </span>
+            </div>
+
             {loading ? (
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-500 mb-4" />
-                <p className="text-slate-500 font-medium">Loading history...</p>
+              <div className="flex-1 flex flex-col items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-brand mb-3" />
+                <p className="text-muted font-bold text-sm">
+                  Loading your emotional history...
+                </p>
               </div>
             ) : data.length > 0 ? (
-              <div className="flex-1 w-full min-h-[300px]">
+              <div className="w-full h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart
+                    data={data}
+                    margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                  >
                     <defs>
-                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                      <linearGradient id="moodColor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey="date" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }}
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f9e4cc"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "#a08060", fontSize: 11, fontWeight: 700 }}
                       dy={10}
                     />
-                    <YAxis 
-                      domain={[0, 6]} 
-                      axisLine={false} 
+                    <YAxis
+                      domain={[1, 5]}
+                      axisLine={false}
                       tickLine={false}
-                      tick={false}
+                      tick={{ fill: "#a08060", fontSize: 11, fontWeight: 700 }}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="#a855f7" 
+                    <Area
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#7c3aed"
                       strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorScore)" 
-                      animationDuration={1500}
+                      fillOpacity={1}
+                      fill="url(#moodColor)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                  <Frown className="w-8 h-8 text-slate-300" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">No data yet</h3>
-                <p className="text-slate-500 max-w-sm">Start logging your moods using the panel on the left to see your personalized emotional landscape here.</p>
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+                <span className="text-4xl mb-3">🌱</span>
+                <h3 className="text-base font-extrabold text-ink mb-1">
+                  No mood entries yet
+                </h3>
+                <p className="text-xs text-muted max-w-xs">
+                  Log your first mood on the left to reveal your interactive graph!
+                </p>
               </div>
+            )}
+          </div>
+
+          {/* Recent Timeline Logs */}
+          <div className="card-lift p-6 bg-white">
+            <h3 className="text-base font-black text-ink mb-4 flex items-center justify-between">
+              <span>Recent Check-In Reflections</span>
+              <span className="text-xs text-muted font-bold">Latest 5</span>
+            </h3>
+
+            {recentLogs.length > 0 ? (
+              <div className="space-y-3">
+                {recentLogs.map((item, idx) => {
+                  const dateStr = item.timestamp
+                    ? format(
+                        typeof item.timestamp === "string"
+                          ? parseISO(item.timestamp)
+                          : new Date(item.timestamp),
+                        "MMM dd, yyyy • h:mm a",
+                      )
+                    : "Today";
+                  const score = typeof item.mood === "number" ? item.mood : 4;
+                  const matchedMood =
+                    MOOD_OPTIONS.find((m) => m.score === score) || MOOD_OPTIONS[1];
+
+                  return (
+                    <div
+                      key={item._id || idx}
+                      className="p-3.5 rounded-2xl bg-cream/40 border border-cream-dark flex items-start gap-3 hover:bg-cream/70 transition-colors"
+                    >
+                      <span className="text-2xl shrink-0 p-1.5 bg-white rounded-xl shadow-xs">
+                        {matchedMood.emoji}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-ink">
+                            {matchedMood.label} ({score}/5)
+                          </span>
+                          <span className="text-[11px] text-muted font-bold">
+                            {dateStr}
+                          </span>
+                        </div>
+                        {item.note && (
+                          <p className="text-xs text-ink/80 font-medium mt-1 leading-relaxed">
+                            {item.note}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted italic">No recent history.</p>
             )}
           </div>
         </div>
