@@ -32,6 +32,7 @@ venv/
 # ML artifacts
 *.gpickle
 *.pkl
+!ml-service/models/*.pkl
 knowledge_graph.*
 
 # For folders
