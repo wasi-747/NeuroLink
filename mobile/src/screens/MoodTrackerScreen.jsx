@@ -328,12 +328,15 @@ export default function MoodTrackerScreen({ onOpenAria }) {
       ) : (
         <View style={styles.historyList}>
           {moodLogs.map((log, idx) => {
+            const moodScore = typeof log.mood === "number" ? log.mood : (log.score || log.rating || 4);
             const moodMeta =
-              MOOD_OPTIONS.find((m) => m.label.toLowerCase() === log.mood?.toLowerCase()) ||
+              (typeof log.mood === "string" && MOOD_OPTIONS.find((m) => m.label.toLowerCase() === log.mood.toLowerCase())) ||
+              MOOD_OPTIONS.find((m) => m.score === Math.round(moodScore)) ||
               MOOD_OPTIONS[1];
+            const moodDisplayLabel = typeof log.mood === "string" ? log.mood : moodMeta.label;
 
             return (
-              <View key={log.id || idx} style={styles.historyCard}>
+              <View key={log._id || log.id || idx} style={styles.historyCard}>
                 <View style={styles.historyCardHeader}>
                   <View style={styles.rowAlign}>
                     <View
@@ -345,7 +348,7 @@ export default function MoodTrackerScreen({ onOpenAria }) {
                       <Text style={styles.historyEmoji}>{moodMeta.emoji}</Text>
                     </View>
                     <View style={styles.historyMetaGroup}>
-                      <Text style={styles.historyMoodLabel}>{log.mood}</Text>
+                      <Text style={styles.historyMoodLabel}>{moodDisplayLabel}</Text>
                       <View style={styles.historyTimeRow}>
                         <Clock size={12} color={colors.textMuted} />
                         <Text style={styles.historyTimeText}>

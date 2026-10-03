@@ -16,14 +16,14 @@ import {
   Brain,
   Droplets,
   Dumbbell,
-  SmartphoneOff,
+  PhoneOff,
   Book,
   Sparkles,
   Award,
   Target,
 } from "lucide-react-native";
 import { colors } from "../theme/colors";
-import { getHabitsApi } from "../services/api";
+import { getHabitsApi, logHabitApi } from "../services/api";
 import { getLocalHabits, toggleLocalHabit, saveLocalHabits } from "../services/storageService";
 
 const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
@@ -34,7 +34,8 @@ const HABIT_ICONS = {
   Brain: Brain,
   Droplets: Droplets,
   Dumbbell: Dumbbell,
-  SmartphoneOff: SmartphoneOff,
+  PhoneOff: PhoneOff,
+  SmartphoneOff: PhoneOff,
   Book: Book,
 };
 
@@ -70,12 +71,19 @@ export default function HabitTrackerScreen({ onOpenAddHabit }) {
   const toggleHabitComplete = async (id) => {
     const updated = await toggleLocalHabit(id);
     setHabits([...updated]);
+    try {
+      await logHabitApi(id);
+    } catch (err) {
+      console.log("Habit logged locally:", err.message);
+    }
   };
 
   const filteredHabits =
     activeCategory === "All"
       ? habits
-      : habits.filter((h) => h.category === activeCategory);
+      : habits.filter(
+          (h) => (h?.category || "").toLowerCase() === (activeCategory || "").toLowerCase()
+        );
 
   const completedCount = habits.filter((h) => h.completedToday).length;
   const progressPercent =
@@ -186,10 +194,11 @@ export default function HabitTrackerScreen({ onOpenAddHabit }) {
         <ActivityIndicator color="#10B981" style={{ marginVertical: 30 }} />
       ) : (
         <View style={styles.habitsList}>
-          {filteredHabits.map((habit) => {
+          {filteredHabits.map((habit, index) => {
+            const habitId = habit._id || habit.id || index;
             const IconComponent = HABIT_ICONS[habit.icon] || Sparkles;
             return (
-              <View key={habit.id} style={styles.habitCard}>
+              <View key={habitId} style={styles.habitCard}>
                 <View style={styles.habitMainRow}>
                   {/* Icon & Title */}
                   <View style={styles.habitInfoGroup}>
@@ -231,7 +240,7 @@ export default function HabitTrackerScreen({ onOpenAddHabit }) {
                       styles.checkCircle,
                       habit.completedToday && styles.checkCircleDone,
                     ]}
-                    onPress={() => toggleHabitComplete(habit.id)}
+                    onPress={() => toggleHabitComplete(habit._id || habit.id)}
                     activeOpacity={0.7}
                   >
                     {habit.completedToday && <Check size={18} color="#FFFFFF" />}

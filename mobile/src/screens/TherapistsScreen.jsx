@@ -35,7 +35,7 @@ const SPECIALTIES = [
   "Sleep Disorders",
 ];
 
-export default function TherapistsScreen({ onSelectTherapist }) {
+export default function TherapistsScreen({ onSelectTherapist, onOpenMyBookings }) {
   const [therapists, setTherapists] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
@@ -53,18 +53,18 @@ export default function TherapistsScreen({ onSelectTherapist }) {
   };
 
   const filteredTherapists = therapists.filter((t) => {
-    const matchesSearch =
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.specializations.some((s) =>
-        s.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    const q = (searchQuery || "").toLowerCase();
+    const nameMatch = (t?.name || "").toLowerCase().includes(q);
+    const titleMatch = (t?.title || "").toLowerCase().includes(q);
+    const specs = Array.isArray(t?.specializations) ? t.specializations : [];
+    const specMatch = specs.some((s) => (s || "").toLowerCase().includes(q));
+
     const matchesSpecialty =
       selectedSpecialty === "All" ||
-      t.specializations.some(
-        (s) => s.toLowerCase() === selectedSpecialty.toLowerCase()
+      specs.some(
+        (s) => (s || "").toLowerCase() === (selectedSpecialty || "").toLowerCase()
       );
-    return matchesSearch && matchesSpecialty;
+    return (nameMatch || titleMatch || specMatch) && matchesSpecialty;
   });
 
   return (
@@ -80,10 +80,24 @@ export default function TherapistsScreen({ onSelectTherapist }) {
         end={{ x: 1, y: 1 }}
         style={styles.headerCard}
       >
-        <View style={styles.badge}>
-          <Stethoscope size={12} color="#A5B4FC" />
-          <Text style={styles.badgeText}>LICENSED CLINICAL TELEHEALTH</Text>
+        <View style={styles.topHeaderRow}>
+          <View style={styles.badge}>
+            <Stethoscope size={12} color="#A5B4FC" />
+            <Text style={styles.badgeText}>LICENSED CLINICAL TELEHEALTH</Text>
+          </View>
+
+          {onOpenMyBookings && (
+            <TouchableOpacity
+              style={styles.myBookingsHeaderBtn}
+              onPress={onOpenMyBookings}
+              activeOpacity={0.8}
+            >
+              <Calendar size={13} color="#FFFFFF" />
+              <Text style={styles.myBookingsHeaderText}>My Appointments</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
         <Text style={styles.headerTitle}>Certified Therapists</Text>
         <Text style={styles.headerSubtitle}>
           Connect with world-class psychologists and neuro-counselors for secure 1-on-1 sessions.
@@ -134,8 +148,8 @@ export default function TherapistsScreen({ onSelectTherapist }) {
         <ActivityIndicator color={colors.brand} style={{ marginVertical: 30 }} />
       ) : (
         <View style={styles.therapistList}>
-          {filteredTherapists.map((therapist) => (
-            <View key={therapist.id} style={styles.therapistCard}>
+          {filteredTherapists.map((therapist, index) => (
+            <View key={therapist._id || therapist.id || index} style={styles.therapistCard}>
               {/* Card Top Row */}
               <View style={styles.cardTopRow}>
                 <Image
@@ -238,6 +252,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(99, 102, 241, 0.2)",
   },
+  topHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
   badge: {
     flexDirection: "row",
     alignItems: "center",
@@ -245,9 +265,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    alignSelf: "flex-start",
-    marginBottom: 8,
     gap: 6,
+  },
+  myBookingsHeaderBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(99, 102, 241, 0.4)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  myBookingsHeaderText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
   },
   badgeText: {
     color: "#C7D2FE",

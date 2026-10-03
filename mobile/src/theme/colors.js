@@ -9,6 +9,7 @@ export const colors = {
   textPrimary: "#FFFFFF",
   textSecondary: "#94A3B8",
   textMuted: "#64748B",
+  textLight: "#FFFFFF",
   
   // Brand
   brand: "#6366F1",

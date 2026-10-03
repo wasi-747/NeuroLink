@@ -25,8 +25,13 @@ import CreatePostModal from "./src/components/modals/CreatePostModal";
 import AddHabitModal from "./src/components/modals/AddHabitModal";
 import CourseLessonModal from "./src/components/modals/CourseLessonModal";
 import StressDetailModal from "./src/components/modals/StressDetailModal";
+import StressQuizModal from "./src/components/modals/StressQuizModal";
 import SleepDetailModal from "./src/components/modals/SleepDetailModal";
 import HeartRateDetailModal from "./src/components/modals/HeartRateDetailModal";
+import JournalModal from "./src/components/modals/JournalModal";
+import GratitudeModal from "./src/components/modals/GratitudeModal";
+import MyBookingsModal from "./src/components/modals/MyBookingsModal";
+import WeeklyReportModal from "./src/components/modals/WeeklyReportModal";
 
 function MainApp() {
   const { isAuthenticated } = useAuth();
@@ -42,8 +47,13 @@ function MainApp() {
   const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isStressOpen, setIsStressOpen] = useState(false);
+  const [isStressQuizOpen, setIsStressQuizOpen] = useState(false);
   const [isSleepOpen, setIsSleepOpen] = useState(false);
   const [isHeartRateOpen, setIsHeartRateOpen] = useState(false);
+  const [isJournalOpen, setIsJournalOpen] = useState(false);
+  const [isGratitudeOpen, setIsGratitudeOpen] = useState(false);
+  const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
+  const [isWeeklyReportOpen, setIsWeeklyReportOpen] = useState(false);
   const [selectedTherapist, setSelectedTherapist] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
@@ -65,6 +75,14 @@ function MainApp() {
       setActiveTab("mood");
     } else if (optionId === "habit") {
       setActiveTab("habits");
+    } else if (optionId === "journal") {
+      setIsJournalOpen(true);
+    } else if (optionId === "gratitude") {
+      setIsGratitudeOpen(true);
+    } else if (optionId === "report") {
+      setIsWeeklyReportOpen(true);
+    } else if (optionId === "quiz") {
+      setIsStressQuizOpen(true);
     } else if (optionId === "breathe") {
       setIsStressOpen(true);
     } else if (optionId === "crisis") {
@@ -106,6 +124,10 @@ function MainApp() {
               onOpenStress={() => setIsStressOpen(true)}
               onOpenSleep={() => setIsSleepOpen(true)}
               onOpenHeartRate={() => setIsHeartRateOpen(true)}
+              onOpenJournal={() => setIsJournalOpen(true)}
+              onOpenGratitude={() => setIsGratitudeOpen(true)}
+              onOpenQuiz={() => setIsStressQuizOpen(true)}
+              onOpenReport={() => setIsWeeklyReportOpen(true)}
             />
           )}
 
@@ -120,6 +142,7 @@ function MainApp() {
           {activeTab === "therapists" && (
             <TherapistsScreen
               onSelectTherapist={(therapist) => setSelectedTherapist(therapist)}
+              onOpenMyBookings={() => setIsMyBookingsOpen(true)}
             />
           )}
 
@@ -171,6 +194,7 @@ function MainApp() {
           visible={isAriaOpen}
           onClose={() => setIsAriaOpen(false)}
           onOpenVoiceMode={() => setIsAriaVoiceOpen(true)}
+          onOpenCrisis={() => setActiveTab("crisis")}
           userMetrics={{
             steps: 822,
             sleepHours: 7.5,
@@ -223,6 +247,13 @@ function MainApp() {
           visible={isStressOpen}
           onClose={() => setIsStressOpen(false)}
           onOpenAria={() => setIsAriaOpen(true)}
+          onTakeQuiz={() => setIsStressQuizOpen(true)}
+        />
+
+        <StressQuizModal
+          visible={isStressQuizOpen}
+          onClose={() => setIsStressQuizOpen(false)}
+          onOpenAria={() => setIsAriaOpen(true)}
         />
 
         <SleepDetailModal
@@ -234,6 +265,34 @@ function MainApp() {
           visible={isHeartRateOpen}
           onClose={() => setIsHeartRateOpen(false)}
           bpm={72}
+        />
+
+        {/* AI Reflective Journal Modal */}
+        <JournalModal
+          visible={isJournalOpen}
+          onClose={() => setIsJournalOpen(false)}
+          onOpenCrisis={() => setActiveTab("crisis")}
+          onOpenAria={() => setIsAriaOpen(true)}
+        />
+
+        {/* Daily 3-Prompt Gratitude Modal */}
+        <GratitudeModal
+          visible={isGratitudeOpen}
+          onClose={() => setIsGratitudeOpen(false)}
+        />
+
+        {/* Telehealth Appointments & Video Room Modal */}
+        <MyBookingsModal
+          visible={isMyBookingsOpen}
+          onClose={() => setIsMyBookingsOpen(false)}
+          onBookNew={() => setActiveTab("therapists")}
+        />
+
+        {/* Comprehensive Weekly Mind Balance Report Modal */}
+        <WeeklyReportModal
+          visible={isWeeklyReportOpen}
+          onClose={() => setIsWeeklyReportOpen(false)}
+          onOpenAria={() => setIsAriaOpen(true)}
         />
       </View>
     </SafeAreaView>

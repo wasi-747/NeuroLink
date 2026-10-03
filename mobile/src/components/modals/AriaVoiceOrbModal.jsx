@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Speech from "expo-speech";
 import {
   Mic,
   MicOff,
@@ -115,31 +116,83 @@ export default function AriaVoiceOrbModal({
     }
   }, [isListening, isSpeaking]);
 
+  const speakText = (text) => {
+    try {
+      Speech.stop();
+      setIsSpeaking(true);
+      const clean = text.replace(/[*#_~`]/g, "").trim();
+      Speech.speak(clean, {
+        language: "en-US",
+        pitch: 1.05,
+        rate: 0.9,
+        onDone: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    } catch (err) {
+      console.warn("Speech synthesis error:", err);
+      setIsSpeaking(false);
+    }
+  };
+
+  const handleStopSpeaking = () => {
+    try {
+      Speech.stop();
+    } catch (e) {}
+    setIsSpeaking(false);
+  };
+
+  const handleClose = () => {
+    handleStopSpeaking();
+    setIsListening(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (visible) {
+      const greeting =
+        "Hi, I'm Aria. I'm an AI wellness companion, not a therapist, but I'm here to support you. How are you feeling today?";
+      setAriaSpeechText(greeting);
+      speakText(greeting);
+    } else {
+      handleStopSpeaking();
+    }
+    return () => {
+      handleStopSpeaking();
+    };
+  }, [visible]);
+
   if (!visible) return null;
 
   const handleToggleMic = () => {
     if (!isListening) {
+      handleStopSpeaking();
       setIsListening(true);
-      setIsSpeaking(false);
       setTranscript("Listening to your voice...");
 
-      // Simulate voice capture
+      // Voice capture simulation
       setTimeout(async () => {
         const spoken = "I've been feeling tight in my chest and overwhelmed with work.";
         setTranscript(`"${spoken}"`);
         setIsListening(false);
-        setIsSpeaking(true);
 
         try {
           const res = await chatWithAria(
             [{ role: "user", content: spoken }],
             userMetrics
           );
-          setAriaSpeechText(res.reply || "Take a slow deep breath with me. Inhale for 4 seconds...");
+          const reply =
+            res.reply ||
+            "Take a slow deep breath with me. Inhale for 4 seconds, hold for 4, and gently exhale.";
+          setAriaSpeechText(reply);
+          speakText(reply);
         } catch (e) {
-          setAriaSpeechText("I hear the strain in your voice. Let's drop your shoulders and do a 4-7-8 breath reset together right now.");
+          const fallback =
+            "I hear the strain in your voice. Let's drop your shoulders and do a 4-7-8 breath reset together right now.";
+          setAriaSpeechText(fallback);
+          speakText(fallback);
         }
-      }, 3000);
+      }, 2500);
     } else {
       setIsListening(false);
       setTranscript("");
@@ -147,15 +200,24 @@ export default function AriaVoiceOrbModal({
   };
 
   const handlePromptTap = async (prompt) => {
+    handleStopSpeaking();
     setTranscript(`"${prompt}"`);
     setIsListening(false);
-    setIsSpeaking(true);
 
     try {
-      const res = await chatWithAria([{ role: "user", content: prompt }], userMetrics);
-      setAriaSpeechText(res.reply || "I'm right here with you. Let's take this one step at a time.");
+      const res = await chatWithAria(
+        [{ role: "user", content: prompt }],
+        userMetrics
+      );
+      const reply =
+        res.reply || "I'm right here with you. Let's take this one step at a time.";
+      setAriaSpeechText(reply);
+      speakText(reply);
     } catch (e) {
-      setAriaSpeechText("Take a gentle breath in through your nose, hold softly, and let go.");
+      const fallback =
+        "Take a gentle breath in through your nose, hold softly, and let go.";
+      setAriaSpeechText(fallback);
+      speakText(fallback);
     }
   };
 
@@ -169,7 +231,7 @@ export default function AriaVoiceOrbModal({
       visible={visible}
       animationType="fade"
       transparent={false}
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <LinearGradient
         colors={["#0A061E", "#150C30", "#070E18"]}
@@ -177,7 +239,7 @@ export default function AriaVoiceOrbModal({
       >
         {/* Top Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={onClose}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleClose}>
             <X size={22} color="#FFFFFF" />
           </TouchableOpacity>
 

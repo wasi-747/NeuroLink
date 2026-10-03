@@ -11,8 +11,14 @@ import axios from "axios";
 
 import connectDB from "./config/db.js";
 
+import { fileURLToPath } from "url";
+
 // Load env vars
 dotenv.config();
+if (!process.env.MONGO_URI) {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  dotenv.config({ path: path.join(__dirname, ".env") });
+}
 
 // Connect to database
 connectDB();
@@ -44,10 +50,14 @@ app.use(
 
         try {
           const parsed = new URL(value);
-          return (
-            parsed.protocol === "http:" &&
-            ["localhost", "127.0.0.1", "::1"].includes(parsed.hostname)
-          );
+          const isLocalIp = 
+            parsed.hostname === "localhost" ||
+            parsed.hostname === "127.0.0.1" ||
+            parsed.hostname === "::1" ||
+            parsed.hostname.startsWith("192.168.") ||
+            parsed.hostname.startsWith("10.") ||
+            parsed.hostname.startsWith("172.");
+          return (parsed.protocol === "http:" || parsed.protocol === "https:") && isLocalIp;
         } catch {
           return false;
         }

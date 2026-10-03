@@ -16,7 +16,7 @@ import {
   Brain,
   Droplets,
   Dumbbell,
-  SmartphoneOff,
+  PhoneOff,
   Book,
   Moon,
   Sun,
@@ -26,12 +26,13 @@ import {
   CheckCircle2,
 } from "lucide-react-native";
 import { colors } from "../../theme/colors";
+import { createHabitApi } from "../../services/api";
 
 const HABIT_ICONS = [
   { id: "Brain", label: "Mind", icon: Brain },
   { id: "Droplets", label: "Water", icon: Droplets },
   { id: "Dumbbell", label: "Fitness", icon: Dumbbell },
-  { id: "SmartphoneOff", label: "Digital Detox", icon: SmartphoneOff },
+  { id: "PhoneOff", label: "Digital Detox", icon: PhoneOff },
   { id: "Book", label: "Reading", icon: Book },
   { id: "Moon", label: "Sleep", icon: Moon },
   { id: "Sun", label: "Morning", icon: Sun },
@@ -48,29 +49,37 @@ export default function AddHabitModal({ visible, onClose, onHabitAdded }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim()) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const newHabitObj = {
+      name: name.trim(),
+      category: selectedCategory.toLowerCase(),
+      frequency: frequency.toLowerCase(),
+      icon: selectedIcon,
+    };
+
+    try {
+      const created = await createHabitApi(newHabitObj);
       setSuccess(true);
       if (onHabitAdded) {
-        onHabitAdded({
-          id: Date.now().toString(),
-          name,
-          icon: selectedIcon,
-          category: selectedCategory,
-          streak: 1,
-          completedToday: false,
-        });
+        onHabitAdded(created || { ...newHabitObj, id: Date.now().toString(), streak: 0, completedToday: false });
       }
+    } catch (err) {
+      console.warn("createHabit fallback:", err.message);
+      setSuccess(true);
+      if (onHabitAdded) {
+        onHabitAdded({ ...newHabitObj, id: Date.now().toString(), streak: 0, completedToday: false });
+      }
+    } finally {
+      setIsSubmitting(false);
       setTimeout(() => {
         setSuccess(false);
         setName("");
         onClose();
       }, 1200);
-    }, 600);
+    }
   };
 
   return (

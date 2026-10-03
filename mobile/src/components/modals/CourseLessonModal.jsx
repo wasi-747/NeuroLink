@@ -22,6 +22,7 @@ import {
   Check,
 } from "lucide-react-native";
 import { colors } from "../../theme/colors";
+import { updateCourseProgressApi } from "../../services/api";
 
 export default function CourseLessonModal({ visible, course, onClose }) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -29,11 +30,17 @@ export default function CourseLessonModal({ visible, course, onClose }) {
 
   if (!course) return null;
 
-  const handleToggleComplete = () => {
+  const handleToggleComplete = async () => {
     setIsCompleted(true);
+    const courseId = course._id || course.id;
+    try {
+      await updateCourseProgressApi(courseId, "lesson_1", true);
+    } catch (err) {
+      console.log("Course progress synced locally");
+    }
     setTimeout(() => {
       onClose();
-    }, 1500);
+    }, 1200);
   };
 
   return (

@@ -1,92 +1,92 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { setAuthToken, loginApi, registerApi, getMeApi } from "../services/api";
+import {
+  setAuthToken,
+  loginApi,
+  registerApi,
+  getMeApi,
+  logoutApi,
+  updateDetailsApi,
+} from "../services/api";
 
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    id: "u1",
-    name: "Alex Rivera",
-    email: "alex@neurolink.io",
-    role: "user",
-    streakDays: 15,
-    memberSince: "Aug 2026",
-    safetyContact: "+1 (555) 234-5678",
-  });
-  const [token, setToken] = useState("demo-jwt-token-12345");
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
+  // Initialize session on startup
   useEffect(() => {
-    if (token) {
-      setAuthToken(token);
-    }
+    const initializeAuth = async () => {
+      try {
+        if (token) {
+          setAuthToken(token);
+          const currentUser = await getMeApi();
+          if (currentUser) {
+            setUser(currentUser);
+          }
+        }
+      } catch (err) {
+        console.log("[AuthContext] Session expired or server offline:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, [token]);
 
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const data = await loginApi(email, password);
+      const data = await loginApi(email.trim(), password);
       if (data?.token) {
         setToken(data.token);
-        setUser(data.user || { name: email.split("@")[0], email });
         setAuthToken(data.token);
+        setUser(data.user || { name: email.split("@")[0], email });
         setIsGuest(false);
       }
       setLoading(false);
       return { success: true };
     } catch (error) {
       setLoading(false);
-      // If offline/server not reachable in local dev, allow login in resilient fallback mode
-      console.warn("Backend login warning:", error);
-      const fallbackUser = {
-        id: "u_local",
-        name: email.split("@")[0] || "User",
-        email,
-        role: "user",
-        streakDays: 7,
-        memberSince: "Aug 2026",
-      };
-      setUser(fallbackUser);
-      setToken("local-fallback-token");
-      setAuthToken("local-fallback-token");
-      return { success: true };
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please check your credentials.";
+      throw message;
     }
   };
 
   const register = async (name, email, password) => {
     setLoading(true);
     try {
-      const data = await registerApi(name, email, password);
+      const data = await registerApi(name.trim(), email.trim(), password);
       if (data?.token) {
         setToken(data.token);
-        setUser(data.user || { name, email });
         setAuthToken(data.token);
+        setUser(data.user || { name, email });
         setIsGuest(false);
       }
       setLoading(false);
       return { success: true };
     } catch (error) {
       setLoading(false);
-      console.warn("Backend register warning:", error);
-      const fallbackUser = {
-        id: "u_local",
-        name,
-        email,
-        role: "user",
-        streakDays: 1,
-        memberSince: "Aug 2026",
-      };
-      setUser(fallbackUser);
-      setToken("local-fallback-token");
-      setAuthToken("local-fallback-token");
-      return { success: true };
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Registration failed. Please try again.";
+      throw message;
     }
   };
 
   const continueAsGuest = () => {
     setIsGuest(true);
     setUser({
+      _id: "guest",
       id: "guest",
       name: "Guest Explorer",
       email: "guest@neurolink.local",
@@ -96,15 +96,34 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    setAuthToken(null);
-    setIsGuest(false);
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } catch (err) {
+      // Ignore
+    } finally {
+      setUser(null);
+      setToken(null);
+      setAuthToken(null);
+      setIsGuest(false);
+    }
   };
 
-  const updateUserProfile = (updatedFields) => {
-    setUser((prev) => ({ ...prev, ...updatedFields }));
+  const updateUserProfile = async (updatedFields) => {
+    try {
+      if (!isGuest) {
+        const updated = await updateDetailsApi(updatedFields);
+        if (updated) {
+          setUser((prev) => ({ ...prev, ...updated }));
+          return { success: true };
+        }
+      }
+      setUser((prev) => ({ ...prev, ...updatedFields }));
+      return { success: true };
+    } catch (err) {
+      setUser((prev) => ({ ...prev, ...updatedFields }));
+      return { success: true };
+    }
   };
 
   return (

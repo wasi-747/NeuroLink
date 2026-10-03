@@ -8,6 +8,7 @@
     "expo": "~57.0.14",
     "expo-font": "~57.0.1",
     "expo-linear-gradient": "^57.0.1",
+    "expo-speech": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "lucide-react-native": "^1.31.0",
     "react": "19.2.3",

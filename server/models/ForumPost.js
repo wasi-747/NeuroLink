@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const ReactionSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["💙", "🤗", "💪", "🌟", "🕊️"],
+    enum: ["💙", "🤗", "💪", "🌟", "🕊️", "like"],
     required: true,
   },
   userId: {

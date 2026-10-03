@@ -116,7 +116,7 @@ export const createPost = async (req, res) => {
     // Asynchronously call ML service for sentiment analysis
     if (process.env.ML_SERVICE_URL) {
       axios
-        .post(`${process.env.ML_SERVICE_URL}/analyze/sentiment`, {
+        .post(`${process.env.ML_SERVICE_URL}/api/ml/analyze/sentiment`, {
           text: content,
           source: "forum",
         })
@@ -139,7 +139,7 @@ export const createPost = async (req, res) => {
     let sentimentResponse = { crisis_detected: false };
     try {
       const mlResponse = await axios.post(
-        `${process.env.ML_SERVICE_URL}/analyze/sentiment`,
+        `${process.env.ML_SERVICE_URL}/api/ml/analyze/sentiment`,
         {
           text: content,
           source: "forum",
@@ -173,17 +173,24 @@ export const reactToPost = async (req, res) => {
       return res.status(404).json({ success: false, error: "Post not found" });
     }
 
+    if (!Array.isArray(post.reactions)) {
+      post.reactions = [];
+    }
+
     // Remove existing reaction by user if exists
     post.reactions = post.reactions.filter(
-      (r) => r.userId.toString() !== req.user.id,
+      (r) => r?.userId && r.userId.toString() !== req.user.id,
     );
 
+    const reactionType = type === "like" ? "💙" : (type || "💙");
+
     // Add new reaction
-    post.reactions.push({ type, userId: req.user.id });
+    post.reactions.push({ type: reactionType, userId: req.user.id });
     await post.save();
 
     res.status(200).json({ success: true, data: post });
   } catch (error) {
+    console.error("reactToPost error:", error.message);
     res.status(500).json({ success: false, error: "Server Error" });
   }
 };

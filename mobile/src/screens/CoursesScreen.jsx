@@ -44,7 +44,7 @@ export default function CoursesScreen({ onSelectCourse }) {
     activeCategory === "All"
       ? courses
       : courses.filter(
-          (c) => c.category.toLowerCase() === activeCategory.toLowerCase()
+          (c) => (c?.category || "").toLowerCase() === (activeCategory || "").toLowerCase()
         );
 
   return (
@@ -102,37 +102,44 @@ export default function CoursesScreen({ onSelectCourse }) {
         <ActivityIndicator color="#A855F7" style={{ marginVertical: 30 }} />
       ) : (
         <View style={styles.coursesList}>
-          {filteredCourses.map((course) => (
-            <TouchableOpacity
-              key={course.id}
-              style={styles.courseCard}
-              onPress={() => onSelectCourse(course)}
-              activeOpacity={0.85}
-            >
-              {/* Top Banner Gradient */}
-              <LinearGradient
-                colors={course.thumbnailColor || ["#1e1b4b", "#4338ca"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.courseTopGradient}
-              >
-                <View style={styles.courseHeaderRow}>
-                  <View style={styles.categoryPill}>
-                    <Text style={styles.categoryPillText}>
-                      {course.category}
-                    </Text>
-                  </View>
-                  <View style={styles.ratingBadge}>
-                    <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                    <Text style={styles.ratingBadgeText}>{course.rating}</Text>
-                  </View>
-                </View>
+          {filteredCourses.map((course, index) => {
+            const courseKey = course._id || course.id || index;
+            const instructorName =
+              typeof course.instructor === "object"
+                ? (course.instructor?.name || "NeuroLink Faculty")
+                : (course.instructor || "NeuroLink Faculty");
 
-                <Text style={styles.courseCardTitle}>{course.title}</Text>
-                <Text style={styles.instructorText}>
-                  By {course.instructor}
-                </Text>
-              </LinearGradient>
+            return (
+              <TouchableOpacity
+                key={courseKey}
+                style={styles.courseCard}
+                onPress={() => onSelectCourse(course)}
+                activeOpacity={0.85}
+              >
+                {/* Top Banner Gradient */}
+                <LinearGradient
+                  colors={course.thumbnailColor || ["#1e1b4b", "#4338ca"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.courseTopGradient}
+                >
+                  <View style={styles.courseHeaderRow}>
+                    <View style={styles.categoryPill}>
+                      <Text style={styles.categoryPillText}>
+                        {course.category}
+                      </Text>
+                    </View>
+                    <View style={styles.ratingBadge}>
+                      <Star size={12} color="#F59E0B" fill="#F59E0B" />
+                      <Text style={styles.ratingBadgeText}>{course.rating}</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.courseCardTitle}>{course.title}</Text>
+                  <Text style={styles.instructorText}>
+                    By {instructorName}
+                  </Text>
+                </LinearGradient>
 
               {/* Course Meta Body */}
               <View style={styles.courseBody}>
@@ -199,7 +206,8 @@ export default function CoursesScreen({ onSelectCourse }) {
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
-          ))}
+            );
+          })}
         </View>
       )}
     </ScrollView>

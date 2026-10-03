@@ -27,7 +27,7 @@ import { useAuth } from "../context/AuthContext";
 export default function AuthScreen() {
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("alex@neurolink.io");
+  const [email, setEmail] = useState("student1@test.edu");
   const [password, setPassword] = useState("password123");
   const [errorMsg, setErrorMsg] = useState("");
 

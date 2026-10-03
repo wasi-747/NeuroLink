@@ -20,7 +20,8 @@ import {
   TrendingUp,
 } from "lucide-react-native";
 import { colors } from "../theme/colors";
-import { getCommunityPostsApi } from "../services/api";
+import { getCommunityPostsApi, reactCommunityPostApi } from "../services/api";
+import PostDetailModal from "../components/modals/PostDetailModal";
 
 const CATEGORIES = [
   "All",
@@ -35,6 +36,7 @@ export default function CommunityScreen({ onOpenCreatePost }) {
   const [posts, setPosts] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
     loadPosts();
@@ -47,20 +49,28 @@ export default function CommunityScreen({ onOpenCreatePost }) {
     setLoading(false);
   };
 
-  const toggleLike = (id) => {
+  const toggleLike = async (id) => {
     setPosts((prev) =>
       prev.map((p) => {
-        if (p.id === id) {
+        const pId = p._id || p.id;
+        if (pId === id) {
           const nextLiked = !p.isLiked;
+          const currentCount = p.likesCount !== undefined ? p.likesCount : (p.likes || 0);
           return {
             ...p,
             isLiked: nextLiked,
-            likes: nextLiked ? p.likes + 1 : p.likes - 1,
+            likesCount: nextLiked ? currentCount + 1 : Math.max(0, currentCount - 1),
+            likes: nextLiked ? currentCount + 1 : Math.max(0, currentCount - 1),
           };
         }
         return p;
       })
     );
+    try {
+      await reactCommunityPostApi(id, "like");
+    } catch (err) {
+      console.log("React locally:", err.message);
+    }
   };
 
   return (
@@ -134,88 +144,133 @@ export default function CommunityScreen({ onOpenCreatePost }) {
         <ActivityIndicator color="#14B8A6" style={{ marginVertical: 30 }} />
       ) : (
         <View style={styles.feedList}>
-          {posts.map((post) => (
-            <View key={post.id} style={styles.postCard}>
-              {/* Post Header */}
-              <View style={styles.postHeader}>
-                <View style={styles.authorRow}>
-                  <View
-                    style={[
-                      styles.avatarCircle,
-                      post.isAnonymous && styles.anonAvatarCircle,
-                    ]}
-                  >
-                    {post.isAnonymous ? (
-                      <Shield size={16} color="#5EEAD4" />
-                    ) : (
-                      <Text style={styles.avatarInitials}>
-                        {post.author.charAt(0)}
-                      </Text>
-                    )}
-                  </View>
-                  <View>
-                    <View style={styles.authorNameRow}>
-                      <Text style={styles.authorName}>{post.author}</Text>
-                      {post.isAnonymous && (
-                        <View style={styles.anonBadge}>
-                          <Text style={styles.anonBadgeText}>Anon</Text>
-                        </View>
+          {posts.map((post) => {
+            const postId = post._id || post.id;
+            const authorDisplayName =
+              post.authorName || post.author || (post.isAnonymous ? "Anonymous Warrior" : "Community Member");
+            const authorInitial = authorDisplayName.charAt(0).toUpperCase();
+            const likesCountDisplay =
+              post.likesCount !== undefined ? post.likesCount : (post.likes || 0);
+            const timeDisplay =
+              post.createdAt && post.createdAt.includes("T")
+                ? new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : (post.createdAt || "Recent");
+
+            return (
+              <View key={postId} style={styles.postCard}>
+                {/* Post Header */}
+                <View style={styles.postHeader}>
+                  <View style={styles.authorRow}>
+                    <View
+                      style={[
+                        styles.avatarCircle,
+                        post.isAnonymous && styles.anonAvatarCircle,
+                      ]}
+                    >
+                      {post.isAnonymous ? (
+                        <Shield size={16} color="#5EEAD4" />
+                      ) : (
+                        <Text style={styles.avatarInitials}>
+                          {authorInitial}
+                        </Text>
                       )}
                     </View>
-                    <Text style={styles.timeText}>{post.createdAt}</Text>
+                    <View>
+                      <View style={styles.authorNameRow}>
+                        <Text style={styles.authorName}>{authorDisplayName}</Text>
+                        {post.isAnonymous && (
+                          <View style={styles.anonBadge}>
+                            <Text style={styles.anonBadgeText}>Anon</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.timeText}>{timeDisplay}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>{post.category}</Text>
                   </View>
                 </View>
 
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryBadgeText}>{post.category}</Text>
+                {/* Title & Body (Clickable to open discussion) */}
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => setSelectedPost(post)}
+                >
+                  <Text style={styles.postTitle}>{post.title}</Text>
+                  <Text style={styles.postContent}>{post.content}</Text>
+                </TouchableOpacity>
+
+                {/* Actions Footer */}
+                <View style={styles.postFooter}>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      post.isLiked && styles.actionButtonLiked,
+                    ]}
+                    onPress={() => toggleLike(postId)}
+                  >
+                    <Heart
+                      size={16}
+                      color={post.isLiked ? "#F43F5E" : colors.textMuted}
+                      fill={post.isLiked ? "#F43F5E" : "transparent"}
+                    />
+                    <Text
+                      style={[
+                        styles.actionText,
+                        post.isLiked && { color: "#F43F5E", fontWeight: "700" },
+                      ]}
+                    >
+                      {likesCountDisplay}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setSelectedPost(post)}
+                  >
+                    <MessageSquare size={16} color={colors.textMuted} />
+                    <Text style={styles.actionText}>{post.commentsCount || 0}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setSelectedPost(post)}
+                  >
+                    <Bookmark size={16} color={colors.textMuted} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => setSelectedPost(post)}
+                  >
+                    <Share2 size={16} color={colors.textMuted} />
+                  </TouchableOpacity>
                 </View>
               </View>
-
-              {/* Title & Body */}
-              <Text style={styles.postTitle}>{post.title}</Text>
-              <Text style={styles.postContent}>{post.content}</Text>
-
-              {/* Actions Footer */}
-              <View style={styles.postFooter}>
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    post.isLiked && styles.actionButtonLiked,
-                  ]}
-                  onPress={() => toggleLike(post.id)}
-                >
-                  <Heart
-                    size={16}
-                    color={post.isLiked ? "#F43F5E" : colors.textMuted}
-                    fill={post.isLiked ? "#F43F5E" : "transparent"}
-                  />
-                  <Text
-                    style={[
-                      styles.actionText,
-                      post.isLiked && { color: "#F43F5E", fontWeight: "700" },
-                    ]}
-                  >
-                    {post.likes}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.actionButton}>
-                  <MessageSquare size={16} color={colors.textMuted} />
-                  <Text style={styles.actionText}>{post.commentsCount}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.actionButton}>
-                  <Bookmark size={16} color={colors.textMuted} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.actionButton}>
-                  <Share2 size={16} color={colors.textMuted} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
+
+      {/* Post Detail & Discussion Modal */}
+      <PostDetailModal
+        visible={!!selectedPost}
+        post={selectedPost}
+        onClose={() => setSelectedPost(null)}
+        onPostUpdated={(postId, isLiked, likesCount) => {
+          setPosts((prev) =>
+            prev.map((p) => {
+              const id = p._id || p.id;
+              if (id === postId) {
+                return { ...p, isLiked, likesCount, likes: likesCount };
+              }
+              return p;
+            })
+          );
+        }}
+      />
     </ScrollView>
   );
 }

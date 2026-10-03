@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,9 @@ import {
   VolumeX,
   Brain,
   Headphones,
+  Wind,
+  ShieldAlert,
+  Phone,
 } from "lucide-react-native";
 import { chatWithAria } from "../../services/api";
 
@@ -29,6 +32,7 @@ export default function AriaChatModal({
   visible,
   onClose,
   onOpenVoiceMode,
+  onOpenCrisis,
   userMetrics = {},
 }) {
   const [messages, setMessages] = useState([
@@ -44,7 +48,25 @@ export default function AriaChatModal({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isCrisisDetected, setIsCrisisDetected] = useState(false);
+  const [isBreathingMode, setIsBreathingMode] = useState(false);
+  const [breathPhase, setBreathPhase] = useState("Inhale");
   const scrollViewRef = useRef();
+
+  // 4-4-4-4 Box Breathing cycle
+  useEffect(() => {
+    let timer;
+    if (isBreathingMode) {
+      const phases = ["Inhale (4s)", "Hold (4s)", "Exhale (4s)", "Rest (4s)"];
+      let step = 0;
+      setBreathPhase(phases[0]);
+      timer = setInterval(() => {
+        step = (step + 1) % phases.length;
+        setBreathPhase(phases[step]);
+      }, 4000);
+    }
+    return () => clearInterval(timer);
+  }, [isBreathingMode]);
 
   const suggestionChips = [
     "I'm feeling a bit anxious today 🌿",
@@ -90,6 +112,10 @@ export default function AriaChatModal({
       };
 
       setMessages([...newHistory, ariaMsg]);
+
+      if (response?.isCrisis) {
+        setIsCrisisDetected(true);
+      }
     } catch (error) {
       const fallbackMsg = {
         id: (Date.now() + 1).toString(),
@@ -186,6 +212,80 @@ export default function AriaChatModal({
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Quick Actions Bar */}
+        <View style={styles.quickBar}>
+          <TouchableOpacity
+            style={[styles.quickBarBtn, isBreathingMode && styles.quickBarBtnActive]}
+            onPress={() => setIsBreathingMode(!isBreathingMode)}
+            activeOpacity={0.8}
+          >
+            <Wind size={14} color={isBreathingMode ? "#FFFFFF" : "#C084FC"} />
+            <Text style={[styles.quickBarText, isBreathingMode && styles.quickBarTextActive]}>
+              {isBreathingMode ? "Exit 2-Min Reset" : "2-Min Breath Reset"}
+            </Text>
+          </TouchableOpacity>
+
+          {onOpenCrisis && (
+            <TouchableOpacity
+              style={styles.crisisQuickBtn}
+              onPress={() => {
+                onClose();
+                onOpenCrisis();
+              }}
+              activeOpacity={0.8}
+            >
+              <ShieldAlert size={14} color="#F87171" />
+              <Text style={styles.crisisQuickText}>Emergency Helplines</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* 4-4-4-4 Box Breathing Visualizer */}
+        {isBreathingMode && (
+          <View style={styles.breathingCard}>
+            <Text style={styles.breathingSubtitle}>BOX BREATHING PROTOCOL (4-4-4-4)</Text>
+            <View style={styles.breathingCircle}>
+              <Text style={styles.breathingPhaseText}>{breathPhase}</Text>
+            </View>
+            <Text style={styles.breathingHint}>
+              Relax your jaw and shoulders. Follow the rhythm to downregulate stress.
+            </Text>
+          </View>
+        )}
+
+        {/* Urgent Crisis Helpline Banner */}
+        {isCrisisDetected && (
+          <View style={styles.crisisBanner}>
+            <View style={styles.crisisBannerTop}>
+              <ShieldAlert size={18} color="#EF4444" />
+              <Text style={styles.crisisBannerTitle}>Immediate Support Available</Text>
+            </View>
+            <Text style={styles.crisisBannerBody}>
+              You are not alone. Free, confidential, non-judgmental support is available 24/7.
+            </Text>
+            <View style={styles.crisisButtonsRow}>
+              <TouchableOpacity
+                style={styles.callHotlineBtn}
+                onPress={() => {
+                  if (onOpenCrisis) {
+                    onClose();
+                    onOpenCrisis();
+                  }
+                }}
+              >
+                <Phone size={14} color="#FFFFFF" />
+                <Text style={styles.callHotlineText}>Open Emergency Helpline</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dismissCrisisBtn}
+                onPress={() => setIsCrisisDetected(false)}
+              >
+                <Text style={styles.dismissCrisisText}>Dismiss</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Chat Messages */}
         <ScrollView
@@ -527,6 +627,149 @@ const styles = StyleSheet.create({
   },
   sendBtnActive: {
     backgroundColor: "#6366F1",
+  },
+  quickBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "rgba(15, 23, 42, 0.95)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.08)",
+  },
+  quickBarBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(192, 132, 252, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(192, 132, 252, 0.3)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  quickBarBtnActive: {
+    backgroundColor: "#7C3AED",
+    borderColor: "#A78BFA",
+  },
+  quickBarText: {
+    color: "#E9D5FF",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  quickBarTextActive: {
+    color: "#FFFFFF",
+  },
+  crisisQuickBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 5,
+  },
+  crisisQuickText: {
+    color: "#FCA5A5",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  breathingCard: {
+    backgroundColor: "rgba(49, 46, 129, 0.4)",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(99, 102, 241, 0.3)",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  breathingSubtitle: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#A5B4FC",
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  breathingCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "#6366F1",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#818CF8",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 6,
+    marginVertical: 6,
+  },
+  breathingPhaseText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  breathingHint: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    textAlign: "center",
+    marginTop: 8,
+  },
+  crisisBanner: {
+    backgroundColor: "rgba(239, 68, 68, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.4)",
+    borderRadius: 16,
+    margin: 12,
+    padding: 14,
+  },
+  crisisBannerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  crisisBannerTitle: {
+    color: "#EF4444",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  crisisBannerBody: {
+    color: "#F87171",
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 10,
+  },
+  crisisButtonsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  callHotlineBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EF4444",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 6,
+  },
+  callHotlineText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  dismissCrisisBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  dismissCrisisText: {
+    color: "#CBD5E1",
+    fontSize: 11,
+    fontWeight: "600",
   },
 });
 

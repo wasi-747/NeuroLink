@@ -16,15 +16,17 @@ import {
   Brain,
   Sparkles,
   ChevronLeft,
+  ChevronRight,
   Play,
   Square,
   CheckCircle,
   Activity,
   HeartHandshake,
+  Zap,
 } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 
-export default function StressDetailModal({ visible, onClose, onOpenAria }) {
+export default function StressDetailModal({ visible, onClose, onOpenAria, onTakeQuiz }) {
   const [isBreathing, setIsBreathing] = useState(false);
   const [breathPhase, setBreathPhase] = useState("Inhale (4s)");
   const breathAnim = useRef(new Animated.Value(1)).current;
@@ -217,6 +219,32 @@ export default function StressDetailModal({ visible, onClose, onOpenAria }) {
                 </View>
               </View>
             </View>
+
+            {/* PSS-10 Clinical Stress Assessment Button */}
+            {onTakeQuiz && (
+              <TouchableOpacity
+                style={styles.quizTriggerCard}
+                onPress={() => {
+                  onClose();
+                  onTakeQuiz();
+                }}
+                activeOpacity={0.85}
+              >
+                <LinearGradient
+                  colors={["#b45309", "#d97706"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.quizGradient}
+                >
+                  <Zap size={20} color="#FEF3C7" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.quizCardTitle}>Take PSS-10 Stress Assessment</Text>
+                    <Text style={styles.quizCardSubtitle}>10 clinical questions to evaluate stress</Text>
+                  </View>
+                  <ChevronRight size={18} color="#FEF3C7" />
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
 
             {/* Aria AI Support Button */}
             <TouchableOpacity
@@ -477,6 +505,26 @@ const styles = StyleSheet.create({
   },
   ariaCardSubtitle: {
     color: "#E9D5FF",
+    fontSize: 11,
+  },
+  quizTriggerCard: {
+    borderRadius: 18,
+    overflow: "hidden",
+    marginVertical: 4,
+  },
+  quizGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    gap: 12,
+  },
+  quizCardTitle: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  quizCardSubtitle: {
+    color: "#FEF3C7",
     fontSize: 11,
   },
 });

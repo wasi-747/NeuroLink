@@ -20,17 +20,20 @@ import {
   Heart,
   Moon,
   ChevronLeft,
+  Zap,
 } from "lucide-react-native";
 
 export default function QuickAddModal({ visible, onClose, onSelectOption }) {
   const options = [
     { id: "mood", label: "Log Mood", icon: Smile, color: "#818CF8", bg: "rgba(99, 102, 241, 0.15)" },
+    { id: "journal", label: "AI Journal", icon: BookOpen, color: "#38BDF8", bg: "rgba(56, 189, 248, 0.15)" },
+    { id: "gratitude", label: "Gratitude 3x", icon: Heart, color: "#F43F5E", bg: "rgba(244, 63, 94, 0.15)" },
     { id: "habit", label: "Habit Check", icon: Flame, color: "#34D399", bg: "rgba(16, 185, 129, 0.15)" },
+    { id: "quiz", label: "Stress Quiz", icon: Zap, color: "#F59E0B", bg: "rgba(245, 158, 11, 0.15)" },
     { id: "breathe", label: "4-7-8 Reset", icon: Wind, color: "#38BDF8", bg: "rgba(56, 189, 248, 0.15)" },
     { id: "aria", label: "Talk to Aria AI", icon: Brain, color: "#C084FC", bg: "rgba(192, 132, 252, 0.15)" },
     { id: "therapist", label: "Book Therapist", icon: Stethoscope, color: "#A5B4FC", bg: "rgba(99, 102, 241, 0.15)" },
     { id: "crisis", label: "Crisis SOS", icon: ShieldAlert, color: "#FB7185", bg: "rgba(244, 63, 94, 0.15)" },
-    { id: "water", label: "Hydration", icon: Droplets, color: "#60A5FA", bg: "rgba(37, 99, 235, 0.15)" },
     { id: "sleep", label: "Log Sleep", icon: Moon, color: "#A5B4FC", bg: "rgba(79, 70, 229, 0.15)" },
   ];
 

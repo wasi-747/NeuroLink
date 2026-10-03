@@ -19,9 +19,14 @@ import {
   ShieldAlert,
   Wind,
   CheckCircle2,
+  BookOpen,
+  Heart,
+  TrendingUp,
+  Zap,
 } from "lucide-react-native";
 import DailyActivityCard from "../components/cards/DailyActivityCard";
 import StepsCard from "../components/cards/StepsCard";
+import ForYouRecommendationsCard from "../components/cards/ForYouRecommendationsCard";
 import {
   SleepCard,
   WaterCard,
@@ -39,6 +44,10 @@ export default function HomeScreen({
   onOpenStress,
   onOpenSleep,
   onOpenHeartRate,
+  onOpenJournal,
+  onOpenGratitude,
+  onOpenQuiz,
+  onOpenReport,
 }) {
   const [waterMl, setWaterMl] = useState(750);
   const [steps, setSteps] = useState(822);
@@ -100,6 +109,15 @@ export default function HomeScreen({
         calorieGoal={300}
       />
 
+      {/* For You ML Recommendations Engine */}
+      <ForYouRecommendationsCard
+        onOpenAria={onOpenAria}
+        onOpenStress={onOpenStress}
+        onOpenGratitude={onOpenGratitude}
+        onOpenJournal={onOpenJournal}
+        onOpenQuiz={onOpenQuiz}
+      />
+
       {/* 2 Mental Wellness Quick Tiles: Mood Tracker & Habit Tracker */}
       <View style={styles.dualBannerRow}>
         {/* Mood Check-In Tile */}
@@ -148,6 +166,45 @@ export default function HomeScreen({
               <Text style={[styles.tileActionText, { color: "#6EE7B7" }]}>View Streaks →</Text>
             </View>
           </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {/* 3 Reflection & Analytics Quick Access Cards */}
+      <View style={styles.tripleActionRow}>
+        <TouchableOpacity
+          style={styles.miniActionCard}
+          onPress={onOpenJournal}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.miniIconBox, { backgroundColor: "rgba(56, 189, 248, 0.15)" }]}>
+            <BookOpen size={16} color="#38BDF8" />
+          </View>
+          <Text style={styles.miniActionTitle}>AI Journal</Text>
+          <Text style={styles.miniActionSub}>Reflect</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.miniActionCard}
+          onPress={onOpenGratitude}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.miniIconBox, { backgroundColor: "rgba(244, 63, 94, 0.15)" }]}>
+            <Heart size={16} color="#F43F5E" />
+          </View>
+          <Text style={styles.miniActionTitle}>Gratitude</Text>
+          <Text style={styles.miniActionSub}>3 Good Things</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.miniActionCard}
+          onPress={onOpenReport}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.miniIconBox, { backgroundColor: "rgba(52, 211, 153, 0.15)" }]}>
+            <TrendingUp size={16} color="#34D399" />
+          </View>
+          <Text style={styles.miniActionTitle}>Mind Report</Text>
+          <Text style={styles.miniActionSub}>Weekly Score</Text>
         </TouchableOpacity>
       </View>
 
@@ -383,6 +440,38 @@ const styles = StyleSheet.create({
   gridRow: {
     flexDirection: "row",
     gap: 12,
+  },
+  tripleActionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 14,
+  },
+  miniActionCard: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: 16,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+  },
+  miniIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  miniActionTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 2,
+  },
+  miniActionSub: {
+    fontSize: 10,
+    color: "#94A3B8",
   },
 });
 

@@ -23,7 +23,7 @@ export const addJournalEntry = asyncHandler(async (req, res, next) => {
   // Asynchronously call ML service for sentiment analysis
   if (process.env.ML_SERVICE_URL) {
     axios
-      .post(`${process.env.ML_SERVICE_URL}/analyze/sentiment`, {
+      .post(`${process.env.ML_SERVICE_URL}/api/ml/analyze/sentiment`, {
         text: content,
         source: "journal",
       })
@@ -50,7 +50,7 @@ export const addJournalEntry = asyncHandler(async (req, res, next) => {
   let sentimentResponse = { crisis_detected: false };
   try {
     const mlResponse = await axios.post(
-      `${process.env.ML_SERVICE_URL}/analyze/sentiment`,
+      `${process.env.ML_SERVICE_URL}/api/ml/analyze/sentiment`,
       {
         text: content,
         source: "journal",

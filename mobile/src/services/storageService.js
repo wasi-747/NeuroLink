@@ -100,7 +100,7 @@ export const addLocalHabit = async (habit) => {
 // Toggle habit completion status
 export const toggleLocalHabit = async (habitId) => {
   memoryStore[STORAGE_KEYS.HABITS] = memoryStore[STORAGE_KEYS.HABITS].map((h) => {
-    if (h.id === habitId) {
+    if (h._id === habitId || h.id === habitId) {
       const nextCompleted = !h.completedToday;
       return {
         ...h,

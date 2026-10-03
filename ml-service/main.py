@@ -18,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(sentiment.router, prefix="/api/ml")
+app.include_router(sentiment.router)
 app.include_router(chat.router, prefix="/api/ml")
 app.include_router(report.router, prefix="/api/ml")
 app.include_router(learning.router, prefix="/api/ml")

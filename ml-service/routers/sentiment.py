@@ -20,7 +20,7 @@ GROQ_MODEL = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
 
 class SentimentRequest(BaseModel):
     text: str
-    source: str # "journal" | "forum"
+    source: str = "journal" # "journal" | "forum"
 
 # --- Crisis Keyword Detection ---
 CRISIS_KEYWORDS = [

@@ -93,20 +93,24 @@ export const logHabit = asyncHandler(async (req, res, next) => {
     const logDate = new Date(date);
 
     // Check if a log for this habit on this day already exists
-    const existingLog = await HabitLog.findOne({ habit: req.params.id, completedAt: logDate });
+    const existingLog = await HabitLog.findOne({
+      habit: req.params.id,
+      $or: [{ completedAt: logDate }, { date: logDate }],
+    });
 
     if (existingLog) {
-        // If it exists, remove it (toggle off)
-        await existingLog.remove();
-        return res.status(200).json({ success: true, data: { toggled: 'off' } });
+      // If it exists, remove it (toggle off)
+      await HabitLog.findByIdAndDelete(existingLog._id);
+      return res.status(200).json({ success: true, data: { toggled: "off" } });
     } else {
-        // If it doesn't exist, create it (toggle on)
-        const newLog = await HabitLog.create({
-            habit: req.params.id,
-            user: req.user.id,
-            completedAt: logDate
-        });
-        return res.status(201).json({ success: true, data: newLog });
+      // If it doesn't exist, create it (toggle on)
+      const newLog = await HabitLog.create({
+        habit: req.params.id,
+        user: req.user.id,
+        date: logDate,
+        completedAt: logDate,
+      });
+      return res.status(201).json({ success: true, data: newLog });
     }
 });
 

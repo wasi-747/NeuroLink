@@ -13,6 +13,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { X, Send, Shield, Sparkles, CheckCircle2 } from "lucide-react-native";
 import { colors } from "../../theme/colors";
+import { createCommunityPostApi } from "../../services/api";
 
 const CATEGORIES = [
   "General Support",
@@ -32,35 +33,56 @@ export default function CreatePostModal({ visible, onClose, onPostCreated }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const postPayload = {
+      title: title.trim(),
+      content: content.trim(),
+      category: category,
+      isAnonymous: Boolean(isAnonymous),
+      tags: [category.toLowerCase()],
+    };
+
+    try {
+      const created = await createCommunityPostApi(postPayload);
+      setSuccess(true);
+      if (onPostCreated) {
+        onPostCreated(created || {
+          _id: Date.now().toString(),
+          authorName: isAnonymous ? "Anonymous Warrior" : "You",
+          ...postPayload,
+          likesCount: 0,
+          commentsCount: 0,
+          isLiked: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.warn("createCommunityPostApi fallback:", err.message);
       setSuccess(true);
       if (onPostCreated) {
         onPostCreated({
-          id: Date.now().toString(),
-          author: isAnonymous ? "Anonymous Warrior" : "You",
-          isAnonymous,
-          category,
-          title,
-          content,
-          likes: 1,
+          _id: Date.now().toString(),
+          authorName: isAnonymous ? "Anonymous Warrior" : "You",
+          ...postPayload,
+          likesCount: 0,
           commentsCount: 0,
-          isLiked: true,
-          createdAt: "Just now",
+          isLiked: false,
+          createdAt: new Date().toISOString(),
         });
       }
+    } finally {
+      setIsSubmitting(false);
       setTimeout(() => {
         setSuccess(false);
         setTitle("");
         setContent("");
         setIsAnonymous(false);
         onClose();
-      }, 1500);
-    }, 800);
+      }, 1200);
+    }
   };
 
   return (
