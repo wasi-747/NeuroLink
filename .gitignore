@@ -45,6 +45,5 @@ knowledge_graph.*
 /*.pdf
 /*.pptx
 /*.png
-!mood_comparison.png
-!sentiment_comparison.png
-!sentiment_confusion_matrix.png
+/DEVELOPER_ONBOARDING_GUIDE*
+/NEUROVERSE_PROJECT_GUIDE*
