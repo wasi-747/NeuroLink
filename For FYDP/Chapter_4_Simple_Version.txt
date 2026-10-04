@@ -1,0 +1,39 @@
+Chapter 4: Implementation and Results
+
+This chapter explains how the NeuroLink platform was implemented and tested. It discusses the system setup, the testing procedures, the performance of the machine learning models, and a summary of the outcomes.
+
+Environment Setup
+
+The primary focus in designing the environment for the system was to maintain the rapidness and responsiveness of the application. One of the challenges with mental health offline tools is that they can slow down when they are doing complex calculations and data processing. To prevent this, NeuroLink was split into two separate, distinct components: the primary web application server, and a standalone machine learning service. This architecture ensures that intense background processes don't interfere with user interactions such as recording emotions throughout the day or scheduling meetings.(1)
+
+The interface was made on the front with React and Vite, so that students get a fast loading page and can interact with it easily. A cloud-based MongoDB database was employed for storing data and user accounts, with Node.js and Express used for user account management. The password for users are stored in an encrypted format using bcrypt and user sessions are secured using JSON Web Tokens. All predictive features are executed on their own Python FastAPI service, which takes restapi calls from the main service.(2)
+
+Testing and Evaluation
+
+The platform has been tested in various phases to ensure its smooth and secure operation. The first phase was the unit testing of individual backend functions like data validators, authentication helpers, etc. Integration tests were then carried out with the API endpoints to ensure that requests are correctly rejected when they are not authorized, and that expected responses are returned when they are.(3)
+
+For the machine learning parts, the data sets were divided into training sets and testing sets for measuring real-world performance. To measure the accuracy of the predictions compared with the actual data of the students, the Mean Absolute Error and R-squared statistics were used to evaluate the mood prediction regressor. The classifiers for the sentiment of the journal and negative emotions and crisis language were tested for thousands of test statements on basis of the classification accuracy and the percentages of the recall.(4)
+
+Results and Discussion
+
+A preliminary experiment in the evaluation of the mood prediction model showed that the data were leaking, since the clinical flags were directly connected to the target scores. After the removal of those flags, and the model trained only with the demographic data (age, academic year, marital status), the Linear Regression model performed with a Mean Absolute Error of 0.727 over a five-point scale. It performed better than the tree-based models, which were overfitting because of small sample size of demographic input.(4)
+
+For Journal Sentiment Analysis, text entries were represented in terms of numerical features using TF IDF representation. The Logistic Regression model has an overall accuracy of 81.8 per cent and an inference speed of 1.2 milliseconds per inference, outperforming Support Vector Machines in the models and Random Forest models. Perhaps more significantly, a recall rate of 84.6 percent was obtained for high-risk crisis statements. This way, if a student enters information about self harm or extreme distress, the system will automatically highlight the information and provide the student with information on emergency contacts. (5)
+
+System latencies tests also verified that the most important API endpoints respond with less than 100ms latency. The user logins, for instance, averaged 68 milliseconds, while the database query took 34 milliseconds and the sentiment prediction took 12 milliseconds. The low response times show that the system has performed well when the web server is separated from the machine learning microservice, which successfully avoids the system lag during the user action.(2)
+
+Summary
+
+Finally, the results of implementing and testing the NeuroLink system showed that the system is technically reliable as well as responsive. The decoupled architecture ensures that all features are fast and responsive. In addition, the machine learning algorithms yield reliable predictions of mood and robust crisis detection, ensuring a safe and secure mental health environment for students.
+
+References
+
+[1] Kyndait, P. J., Komu, L. T., Jamir, S. I., Baishya, D., & Kalita, J. K. (2024). The Role of Technology in Mental Health: Evaluating Digital Interventions for Psychological Well-being. International Journal of Scientific Research in Science and Technology, 11(6), 366–386. DOI: https://doi.org/10.32628/IJSRST24116186 (ResearchGate)
+
+[2] Tilkov, S., & Vinoski, S. (2010). Node.js: Using JavaScript to Build High-Performance Network Programs. IEEE Internet Computing, 14(6), 80–83. DOI: https://doi.org/10.1109/MIC.2010.145 (IEEE)
+
+[3] Cho, H. N., Jung, K., Eisenberg, D., King, C. A., & Zheng, K. (2025). Barriers to Digital Mental Health Services among College Students. https://arxiv.org/abs/2507.21093 (arXiv)
+
+[4] Islam, M. S., Sujan, M. S. H., Tasnim, R., Ferdous, M. Z., Masud, J., & Kundu, S. (2020). Depression and Anxiety among University Students: A Cross-Sectional Study. Journal of Affective Disorders, 277, 715–728. DOI: https://doi.org/10.1016/j.jad.2020.08.081 (ScienceDirect)
+
+[5] Bank, M. A., Uddin, M. A., & Hossain, M. S. (2021). Mental Health Sentiment Analysis and Crisis Detection on Social Datasets using Machine Learning. IEEE Access, 9, 102432–102445. DOI: https://doi.org/10.1109/ACCESS.2021.3098523 (IEEE)

@@ -1,0 +1,41 @@
+Chapter 4: Implementation and Results
+
+This chapter covers the technical setup, testing procedures, and experimental evaluation of our platform. We look at how the different components are wired together, how we validated system security and APIs, and how our machine learning models performed on real student data.
+
+4.1 Environment Setup
+
+When we started building NeuroLink, our biggest concern was system lag. Mental health apps need to feel snappy, especially when someone is filling out a mood journal or looking for an emergency helpline. If our machine learning models took several seconds to process text and locked up the backend, users would get frustrated. Because of this, we decided to separate our services right from day one.
+
+For our daily development, we mostly worked on local Windows machines with 8-core processors and 16GB of RAM. We also had an NVIDIA RTX card available, which helped speed up initial testing and sentence embeddings. Later on, when deploying test builds, we moved the backend to an Ubuntu 22.04 environment on a cloud instance with 2 virtual CPUs and 4GB of memory.
+
+Our client app is built with React 18 and Vite. We picked Vite mainly because Webpack was taking too long to rebuild during changes. The UI relies on React Router DOM for page navigation, and we use Axios instances to handle network calls.
+
+The core web server runs on Node.js with Express. It takes care of user logins, database interactions, and routing. Passwords get hashed through bcrypt before touching the database, and we use JSON Web Tokens (JWT) to manage user sessions. On the data side, we rely on MongoDB Atlas. Using Mongoose schemas, we set up collections for users, daily mood check-ins, journal reflections, and therapist bookings.
+
+All of our machine learning components run inside a standalone Python service powered by FastAPI. Whenever someone saves a journal entry, Node makes a background HTTP request to our FastAPI service. FastAPI runs our trained Scikit-learn model, scores the text, and sends back the result. Storing sensitive details like database URLs and JWT secrets in local .env files kept our credentials safe throughout development.
+
+4.2 Testing and Evaluation
+
+We tested NeuroLink in three main phases: making sure individual backend helper functions worked, verifying our REST endpoints under different inputs, and checking how well our machine learning models actually predicted mood and sentiment.
+
+For the backend, we used Jest to test utility functions like date formatters and token checkers. We then ran integration checks on Postman to see how our Express routes handled both good and bad requests. For example, we verified that login attempts with wrong passwords returned 401 Unauthorized, and students trying to visit therapist-only routes were properly blocked with a 403 Forbidden.
+
+On the security side, we double-checked that passwords were never stored in plaintext and that MongoDB queries were safe from injection attacks.
+
+For our machine learning tasks, we split our datasets into an 80% train set and a 20% test set. We evaluated our mood score regressor using Mean Absolute Error and R-squared. For journal sentiment classification, which classifies text into Neutral, Negative, or Crisis, we looked at overall accuracy, macro F1, and class-level recall to make sure high-risk posts were not missed.
+
+4.3 Results and Discussion
+
+Our early attempts at mood prediction hit an unexpected issue. When we first ran our models, we got an R-squared of 1.0, which seemed way too good to be true. Looking into our dataset, we realized there was clear target leakage: the target mood score had been calculated directly from depression and anxiety flags. Because the target was a direct formula of those features, the models simply solved the arithmetic. To fix this, we threw out those clinical flags and retrained our models using only demographic facts like age, study year, and marital status.
+
+On this cleaned demographic data, Linear Regression achieved an R-squared of 0.423 and an MAE of 0.727. Interestingly, tree-based models like Random Forest (R-squared 0.142) and Gradient Boosting (R-squared 0.169) scored much lower. With only a few demographic features and a small sample size, decision trees quickly overfitted the training data, while simple Linear Regression captured the general trend much better.
+
+For sentiment analysis, we tested Logistic Regression, Linear SVM, and Random Forest on 16,203 test entries converted to TF-IDF vectors. Logistic Regression achieved the highest accuracy at 81.8% with an average response time of just 1.2 milliseconds. Linear SVM was right behind it at 81.7%, but it took about 4.8 ms. Random Forest trailed at 81.0% and was significantly slower at 14.5 ms per prediction, largely because tree splits are inefficient on wide, sparse text vectors.
+
+Looking at the crisis class specifically, our Logistic Regression model caught 3,842 out of 4,543 crisis messages, achieving an 84.6% recall and 87.0% precision. In a mental health platform, missing a crisis statement is far worse than mislabeling a normal post. This strong recall gives us confidence that students expressing suicidal thoughts or severe distress will get immediate emergency helpline popups.
+
+We also checked endpoint response times. User logins took around 68 ms due to bcrypt hashing, database wellness queries took 34 ms, and sentiment prediction finished in 12 ms. Because all endpoints responded well below 100 ms, our decoupled setup successfully kept ML tasks from slowing down user navigation.
+
+4.4 Summary
+
+Overall, our tests showed that splitting the platform into an Express web server and a FastAPI machine learning service worked as intended. The system handles daily wellness tracking quickly, and our machine learning models provide reliable demographic mood estimates and fast, accurate crisis detection to protect students in distress.

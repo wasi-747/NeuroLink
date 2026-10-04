@@ -7,23 +7,25 @@ __pycache__/
 .env
 .env.local
 
-# Build output
+# Build output & packages
 dist/
 build/
+*.apk
+*.aab
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
-
-# OS
 .DS_Store
-
-# PDFs and reports
-*.pdf
-Sample reports/
 Thumbs.db
 
-# Python
+# External sample archives & reference folders
+Reports/
+Sample reports/
+mobile version reference images/
+Web/
+
+# Python virtual envs
 *.egg-info/
 *.egg
 venv/
@@ -35,18 +37,14 @@ venv/
 !ml-service/models/*.pkl
 knowledge_graph.*
 
-# For folders
-For FYDP/
-
-# Local previews
-DEVELOPER_ONBOARDING_GUIDE.html
-NEUROVERSE_PROJECT_GUIDE.html
-/*.html
-/*.png
-
-# Generated presentation and root scratch scripts
-NeuroVerse_Final_Defense_Slides.pptx
-build_presentation.py
+# Root scratch and temporary files
 /*.py
 /*.txt
-
+!runtime.txt
+/*.html
+/*.pdf
+/*.pptx
+/*.png
+!mood_comparison.png
+!sentiment_comparison.png
+!sentiment_confusion_matrix.png

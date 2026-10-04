@@ -1,0 +1,932 @@
+\documentclass[a4paper,11pt]{report}
+
+\usepackage{makeidx}
+\usepackage{url}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{framed}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage[noend,ruled,noline,linesnumbered,algochapter]{algorithm2e}
+\usepackage[linktoc=page]{hyperref}
+\usepackage[margin=3cm]{geometry}
+\usepackage{setspace} 
+\usepackage{fancyhdr}
+\usepackage{pgfgantt}
+\usepackage{microtype}
+\usepackage{etoolbox}
+
+\pagestyle{fancy}
+\rhead{\nouppercase\leftmark}
+\lhead{\nouppercase\rightmark}
+
+\makeindex
+\onehalfspacing 
+
+\renewcommand*\contentsname{Table of Contents}
+
+% Prevent Widows and Orphans
+\widowpenalty=10000
+\clubpenalty=10000
+
+\begin{document}
+
+\pagenumbering{roman}
+
+% =========================================================
+% TITLE PAGE
+% =========================================================
+\begin{titlepage}
+    \begin{center}
+        \vspace*{0.5cm} 
+        
+        \Huge
+        \textbf{NeuroVerse: Student Mental Health Wellness Platform}
+        
+        \vspace{0.8cm}
+        \Large
+        Final Year Design Project (FYDP) Report
+        
+        \vspace{1.2cm}
+        \large
+        \textbf{DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING}\\
+        \textbf{UNITED INTERNATIONAL UNIVERSITY}
+        
+        \vspace{1.5cm}
+        
+        \large
+        \textbf{Submitted To:}\\
+        \vspace{0.2cm}
+        \normalsize
+        \textbf{[Supervisor Name]}\\
+        Supervisor\\
+        United International University
+        
+        \vspace{1.5cm}
+        
+        \large
+        \textbf{Submitted By:}\\
+        \vspace{0.3cm}
+        \normalsize
+        \begin{tabular}{ll}
+            \toprule
+            \textbf{Member Name} & \textbf{Student ID} \\
+            \midrule
+            Muhaiminul Amin Shafin & [Student ID] \\
+            Md. Annan & [Student ID] \\
+            Mirza Samawatun Nur Astha & [Student ID] \\
+            Md Asif Sarkar & [Student ID] \\
+            \textbf{Wasiur Rahman Sakib} & \textbf{112230747} \\
+            \bottomrule
+        \end{tabular}
+        
+        \vfill 
+        
+        \large
+        \textbf{Submission Date:} 14 May 2026
+    \end{center}
+\end{titlepage}
+
+\clearpage
+
+% =========================================================
+% ABSTRACT
+% =========================================================
+\begin{abstract}
+\noindent Mental health care accessibility remains a significant challenge due to systemic barriers, stigma, and fragmentation of resources. NeuroVerse is proposed as a holistic, full-stack web application developed utilizing the MERN stack (MongoDB, Express.js, React, Node.js) and optimized with the Vite build tool. The system employs a 3-tier Client-Server architecture and a robust JSON Web Token (JWT) authentication model to securely serve three distinct user roles: Users, Therapists, and Administrators. This report thoroughly documents the software engineering lifecycle of NeuroVerse, encompassing the project vision, methodology selection, comprehensive Work Breakdown Structure (WBS), risk management strategies, and extensive effort estimations using Wideband Delphi, Function Point Analysis (FPA), and COCOMO modeling. By bridging self-care tools—such as mood and habit tracking—with professional therapeutic support and community forums, NeuroVerse aims to democratize mental health resources.
+\end{abstract}
+
+\clearpage
+
+% =========================================================
+% ACKNOWLEDGMENT
+% =========================================================
+\chapter*{Acknowledgment}
+\addcontentsline{toc}{chapter}{Acknowledgment}
+We would like to express our deepest gratitude to our supervisor, faculty members, and peers who supported us throughout the design and development of the NeuroVerse platform. Their invaluable feedback and guidance have been instrumental in shaping the engineering lifecycle and technical architecture of this project.
+
+\clearpage
+
+% =========================================================
+% LIST OF PUBLICATIONS
+% =========================================================
+\chapter*{List of Publications}
+\addcontentsline{toc}{chapter}{List of Publications}
+At the time of this report submission, there are no publications directly originating from this project work. Future research outputs will target software engineering and digital health conferences.
+
+\clearpage
+\tableofcontents
+\addcontentsline{toc}{chapter}{Table of Contents}
+
+\clearpage
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+
+\clearpage
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Save original page-break commands and relax them to prevent chapter page gaps
+\let\origclearpage\clearpage
+\let\origcleardoublepage\cleardoublepage
+\let\clearpage\relax
+\let\cleardoublepage\relax
+
+\renewcommand\bibname{References}
+
+% =========================================================
+% CHAPTER 1: INTRODUCTION
+% =========================================================
+\chapter{Introduction}
+
+\section{Overview}
+NeuroVerse is a comprehensive web-based platform designed to support student mental health and well-being. Built upon modern web technologies, specifically the MERN stack, it offers a centralized hub where individuals can proactively manage their mental health. By combining self-directed care tools with direct access to certified mental health professionals, NeuroVerse bridges the gap between passive wellness tracking and active therapeutic intervention.
+
+\section{Motivation}
+\subsection{Motivation for End-Users}
+End-users are primarily motivated by the desire for an accessible, stigma-free environment to manage their emotional health. NeuroVerse provides a private, integrated suite of tools that empower users to take control of their daily well-being. The convenience of having a mood tracker, journal, guided breathing exercises, and a portal to professional therapists in one location dramatically lowers the friction associated with seeking help.
+
+\subsection{Motivation for Therapists}
+For mental health professionals, patient acquisition and administrative overhead are significant challenges. NeuroVerse serves as a powerful practice management and discovery tool. Therapists are motivated to join the platform to increase their visibility to a targeted demographic actively seeking help, streamline their appointment scheduling via the integrated booking system, and interact with clients in a secure, compliant digital environment.
+
+\subsection{Motivation for Administrators}
+Platform administrators and public health advocates are motivated by the overarching goal of fostering a healthy, supportive digital community. Admin panels allow overseers to curate high-quality educational courses and articles, moderate community forums to ensure a safe space free of harmful content, and analyze aggregate, anonymized data to improve mental health resource allocation.
+
+\section{Objectives}
+The project is driven by the following specific, measurable objectives:
+\begin{itemize}
+    \item To implement a secure Role-Based Access Control (RBAC) system supporting Users, Therapists, and Admins within the first development phase.
+    \item To deploy a functional Personal Wellness Dashboard capable of recording and analyzing Mood, Habits, Journals, and Gratitude entries in real-time.
+    \item To facilitate seamless professional support by engineering a reliable Therapist booking and appointment management system.
+    \item To establish a moderated Community Forum to encourage peer support while maintaining strict safety and content guidelines.
+\end{itemize}
+
+\section{Methodology}
+The NeuroVerse project is developed using the \textbf{Agile Scrum framework}. Developing a mental health application requires navigating sensitive user experiences and evolving functional requirements. Agile Scrum is perfectly suited for this because it allows the development team to build the platform incrementally. Core features (like JWT Auth and the Wellness Dashboard) can be delivered in early sprints, allowing for immediate testing and refinement. Regular Sprint Reviews ensure that the features align with user expectations, and the framework accommodates necessary pivots without derailing the entire project architecture.
+
+Other traditional models like Waterfall were rejected because they assume all requirements can be perfectly understood upfront, which is rarely true for user-centric wellness dashboards. Spiral was deemed too complex and resource-intensive for the scope of this project.
+
+\section{Project Outcome}
+The key outcome of this project is a fully deployed, secure, three-tier web application built on the MERN stack that unifies daily self-care widgets (mood monitoring, breathing utilities) with clinical reservation streams, providing students with immediate mental support.
+
+\section{Organization of the Report}
+The remainder of this report is organized as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2} presents the Literature Review and Background, outlining similar applications and existing research.
+    \item \textbf{Chapter 3} defines the Project Plan, requirement analysis, and task allocation.
+    \item \textbf{Chapter 4} details the implementation particulars of the MERN stack components.
+    \item \textbf{Chapter 5} addresses standards compliance, cost analysis, and complex problem engineering.
+    \item \textbf{Chapter 6} provides conclusions and maps out future directions.
+\end{itemize}
+
+% =========================================================
+% CHAPTER 2: BACKGROUND
+% =========================================================
+\chapter{Literature Review and Background}
+
+\section{Preliminaries}
+Establishing digital mental wellness platforms requires a secure 3-tier architecture (presentation, business logic, and database persistence layers) to protect sensitive patient records while delivering rapid, real-time client responsiveness.
+
+\section{Literature Review}
+\subsection{Similar Applications}
+Current digital mental health offerings are highly fragmented. Solutions such as Headspace focus on wellness exercises but lack therapist access. On the other hand, Talkspace focuses on clinical therapy but lacks basic self-directed wellness trackers. NeuroVerse integrates these components.
+
+\subsection{Waterfall Model}
+\textbf{Definition}: A linear, sequential approach where each phase (Requirements, Design, Implementation, Testing, Deployment, Maintenance) must be completed before the next begins.
+\textbf{Advantages}: Easy to manage; clear milestones; well-documented.
+\textbf{Disadvantages}: Highly inflexible; difficult to accommodate changing requirements; working software is produced late.
+
+\subsection{Spiral Model}
+\textbf{Definition}: A risk-driven process model generator that combines elements of both design and prototyping-in-stages, iterating through planning, risk analysis, engineering, and evaluation.
+\textbf{Advantages}: Excellent for high-risk projects; accommodates changes; early working prototypes.
+\textbf{Disadvantages}: Can be highly complex and costly to manage; heavily dependent on expert risk assessment.
+
+\subsection{Agile Model}
+\textbf{Definition}: A flexible and iterative approach that breaks the project into small, manageable units called sprints or iterations, focusing on collaboration and customer feedback.
+\textbf{Advantages}: Highly adaptable to change; continuous stakeholder feedback; faster time-to-market for core features.
+\textbf{Disadvantages}: Can lack comprehensive documentation; requires highly disciplined teams.
+
+\subsection{Scrum Model}
+\textbf{Definition}: A specific Agile framework utilizing fixed-length iterations called Sprints (usually 2-4 weeks), managed by distinct roles (Product Owner, Scrum Master, Developers).
+\textbf{Advantages}: High transparency; regular inspection and adaptation; strong team empowerment.
+\textbf{Disadvantages}: Scope creep is possible if the Product Owner is weak; requires strict adherence to Scrum ceremonies.
+
+\subsection{Extreme Programming (XP) Model}
+\textbf{Definition}: An Agile framework focusing heavily on engineering practices like Test-Driven Development (TDD), pair programming, and continuous integration.
+\textbf{Advantages}: Extremely high code quality; highly responsive to changing client needs.
+\textbf{Disadvantages}: Can be culturally difficult to adopt; high learning curve for strict engineering practices.
+
+\subsection{Incremental Model}
+\textbf{Definition}: System development is divided into numerous smaller modules, progressing sequentially to build the final system.
+\textbf{Advantages}: Early delivery of parts; reduced risk.
+\textbf{Disadvantages}: High integration complexity; requires high initial planning overhead.
+
+\subsection{Benchmark Analysis}
+Table~\ref{tab:benchmark} presents a comparative overview of these methodologies.
+
+\begin{table}[H]
+\centering
+\caption{Methodology Benchmark Analysis}
+\label{tab:benchmark}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Methodology} & \textbf{Flexibility} & \textbf{Feedback} & \textbf{Collaboration} & \textbf{Early Delivery} & \textbf{Best for NeuroVerse?} \\
+\midrule
+Waterfall & Low & Late & Minimal & No & No \\
+Spiral & Medium & Some & Complex & No & No \\
+Agile & High & High & High & Yes & Mindset only \\
+XP & High & High & Dev-focused & Yes & Too rigid \\
+Incremental & Medium & Limited & Limited & Yes & No \\
+\textbf{Scrum} & \textbf{High} & \textbf{Continuous} & \textbf{Strong} & \textbf{Yes} & \textbf{Best Fit} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Related Research}
+Modern research highlights the utility of function-point based size metric estimation for cross-stack web applications. Lines of Code (LOC) estimations vary widely by developer style, making Function Point Analysis (FPA) the academic standard for baseline functional scaling.
+
+\section{Gap Analysis}
+Traditional portals lack direct links to crisis resources, fail to maintain strict HIPAA data compliance standards, and have high transaction latencies. Furthermore, separate apps for tracking and therapy create friction, leading to poor user adoption.
+
+\section{Summary}
+In summary, existing research outlines clear technical and user experience gaps in mental health software. Unifying self-care and professional booking under an Agile Scrum lifecycle addresses these issues.
+
+% =========================================================
+% CHAPTER 3: DESIGN
+% =========================================================
+\chapter{Project Plan and Design}
+
+\section{Requirement Analysis}
+\subsection{Functional and Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{Functional Requirements (In-Scope):}
+    \begin{itemize}
+        \item \textbf{User Profile Management:} JWT-based authentication for Users, Therapists, and Admins.
+        \item \textbf{Personal Wellness Dashboard:} CRUD operations for Mood entries, Habit tracking, Journal entries, and Gratitude records.
+        \item \textbf{Stress Assessments:} Interactive StressQuiz for baseline evaluations.
+        \item \textbf{Resource Center:} Guided breathing exercises, body scans, wellness articles, and structured courses.
+        \item \textbf{Professional Support:} Therapist discovery marketplace and slots appointment booking system.
+        \item \textbf{Community Forum:} Thread creations, comment posting, and user interaction.
+        \item \textbf{Admin Center:} User account management, content moderation, and therapist approvals.
+    \end{itemize}
+    \item \textbf{Out-of-Scope Features:}
+    \begin{itemize}
+        \item Native mobile applications (relegated to future mobile deployments).
+        \item Real-time video/audio therapy sessions (booking only in early scope).
+        \item Complex gamification, leaderboards, and biometric wearable integration.
+    \end{itemize}
+    \item \textbf{Non-Functional Requirements:} Salted bcrypt hashing, JWT authentication tokens, HTTPS transit security, React responsive grids, and MongoDB payload validation.
+\end{itemize}
+
+\subsection{Context Diagram}
+The context diagram models the boundaries of the NeuroVerse platform. The system interacts with three main external entities:
+\begin{enumerate}
+    \item \textbf{Users (Students):} Submit wellness logs, query therapists, and write forum posts.
+    \item \textbf{Therapists:} Provide slot schedules, manage appointments, and view patient logs.
+    \item \textbf{Administrators:} Moderate forum threads, approve therapist documents, and manage system accounts.
+\end{enumerate}
+
+\subsection{Data Flow Diagram}
+Data streams from the React frontend via Axios REST requests. Security interceptors check for active JWT tokens in headers. The Express.js backend handles business logic, executing queries against the MongoDB Atlas cluster through Mongoose validation schemas, returning status payloads.
+
+\subsection{UI Design}
+The interface is designed in Figma utilizing a sleek, calming dark mode interface to decrease eye strain. Color choices feature smooth gradients of slate blues and forest greens to create a soothing aesthetic, keeping widgets highly responsive.
+
+\section{Detailed Methodology and Design}
+The Gantt chart in Figure~\ref{fig:gantt} visualizes the 8-month project schedule.
+
+\begin{figure}[H]
+\centering
+\begin{ganttchart}[
+    expand chart=\textwidth,
+    hgrid,
+    vgrid,
+    time slot format=simple,
+    title height=1,
+    title/.style={fill=blue!70, draw=black, text=white, font=\bfseries},
+    bar/.style={fill=blue!30, draw=blue!70},
+    bar height=0.6,
+    progress label text={},
+    group right shift=0,
+    group top shift=0.7,
+    group height=.2,
+    group peaks width={0.2},
+]{1}{8}
+\gantttitle{NeuroVerse Project Schedule (Months 1 - 8)}{8} \\
+\gantttitle{M1}{1}
+\gantttitle{M2}{1}
+\gantttitle{M3}{1}
+\gantttitle{M4}{1}
+\gantttitle{M5}{1}
+\gantttitle{M6}{1}
+\gantttitle{M7}{1}
+\gantttitle{M8}{1} \\
+\ganttbar{Requirements Gathering}{1}{2} \\
+\ganttbar{UI/UX \& Design}{2}{3} \\
+\ganttbar{Database Design}{2}{3} \\
+\ganttbar{Auth Controller APIs}{3}{4} \\
+\ganttbar{Wellness CRUD APIs}{3}{5} \\
+\ganttbar{Booking \& Forum APIs}{4}{6} \\
+\ganttbar{React Architecture}{4}{5} \\
+\ganttbar{Wellness UI Widgets}{5}{7} \\
+\ganttbar{API Integration}{6}{7} \\
+\ganttbar{Unit Testing}{6}{8} \\
+\ganttbar{E2E System Testing}{7}{8} \\
+\ganttbar{AWS Deployment}{8}{8}
+\end{ganttchart}
+\caption{NeuroVerse Project Gantt Chart}
+\label{fig:gantt}
+\end{figure}
+
+\section{Task Allocation}
+Table~\ref{tab:wbs} maps the WBS task allocation, duration, and budget across the team.
+
+\begin{longtable}{|p{1.2cm}|p{4.5cm}|p{2cm}|p{1.8cm}|p{1.5cm}|p{2.5cm}|}
+\caption{NeuroVerse Work Breakdown Structure and Cost} \label{tab:wbs} \\
+\hline
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Task Owner} & \textbf{Duration} & \textbf{Cost (\$)} & \textbf{Assignee} \\ \hline
+\endfirsthead
+\multicolumn{6}{c}%
+{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\hline
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Task Owner} & \textbf{Duration} & \textbf{Cost (\$)} & \textbf{Assignee} \\ \hline
+\endhead
+\hline \multicolumn{6}{r}{\textit{Continued on next page}} \\
+\endfoot
+\hline
+\endlastfoot
+
+\textbf{1.0} & \textbf{Project Management} & Annan & 16 Days & \$1,500 & Md. Annan \\ \hline
+1.1 & Requirements Gathering & Sakib & 5 Days & \$1,000 & Wasiur R. Sakib \\ \hline
+1.2 & Project Plan \& Backlog & Annan & 11 Days & \$800 & Md. Annan \\ \hline
+\textbf{2.0} & \textbf{System Design} & Shafin & 14 Days & \$2,400 & M. A. Shafin \\ \hline
+2.1 & Context \& DFD Modeling & Shafin & 6 Days & \$1,200 & M. A. Shafin \\ \hline
+2.2 & UI/UX Figma Design & Shafin & 8 Days & \$1,200 & M. A. Shafin \\ \hline
+\textbf{3.0} & \textbf{Backend Development} & Sakib & 36 Days & \$4,200 & Wasiur R. Sakib \\ \hline
+3.1 & JWT Auth Controller API & Sarkar & 10 Days & \$1,200 & Md Asif Sarkar \\ \hline
+3.2 & Wellness CRUD Controllers & Astha & 14 Days & \$1,500 & Mirza Astha \\ \hline
+3.3 & Booking \& Forum Routers & Annan & 12 Days & \$1,500 & Md. Annan \\ \hline
+\textbf{4.0} & \textbf{Frontend Development} & Astha & 43 Days & \$5,000 & Mirza Astha \\ \hline
+4.1 & React Router Configuration & Sarkar & 10 Days & \$1,200 & Md Asif Sarkar \\ \hline
+4.2 & Wellness Tracking widgets & Astha & 18 Days & \$2,000 & Mirza Astha \\ \hline
+4.3 & Axios REST API Integration & Sakib & 15 Days & \$1,800 & Wasiur R. Sakib \\ \hline
+\textbf{5.0} & \textbf{Testing \& QA} & Sakib & 23 Days & \$2,200 & Wasiur R. Sakib \\ \hline
+5.1 & Mocha Backend Unit Tests & Shafin & 10 Days & \$1,000 & M. A. Shafin \\ \hline
+5.2 & Cypress Integration Tests & Sarkar & 13 Days & \$1,200 & Md Asif Sarkar \\ \hline
+\textbf{6.0} & \textbf{Deployment} & Annan & 9 Days & \$1,500 & Md. Annan \\ \hline
+6.1 & AWS Hosting \& Cloud DB & Astha & 9 Days & \$1,500 & Mirza Astha \\ \hline
+\textbf{Total} & & & \textbf{141 Days} & \textbf{\$16,800} & \\ \hline
+\end{longtable}
+
+\section{Summary}
+Chapter 3 mapped project designs, schedules, and team cost allocation to support organized, high-quality development sprints.
+
+% =========================================================
+% CHAPTER 4: IMPLEMENTATION AND RESULTS
+% =========================================================
+\chapter{Implementation and Results}
+
+This chapter covers the technical setup, testing procedures, and experimental evaluation of our platform. We look at how the different components are wired together, how we validated system security and APIs, and how our machine learning models performed on real student data.
+
+\section{Environment Setup}
+When we started building NeuroLink, our biggest concern was system lag. Mental health apps need to feel snappy, especially when someone is filling out a mood journal or looking for an emergency helpline. If our machine learning models took several seconds to process text and locked up the backend, users would get frustrated. Because of this, we decided to separate our services right from day one.
+
+\subsection{Hardware and System Specifications}
+During development and testing, we ran our services across both local machines and cloud containers. Table~\ref{tab:env_hardware} outlines the hardware specifications we worked with.
+
+\begin{table}[H]
+\centering
+\caption{System Hardware and Development Environment Specifications}
+\label{tab:env_hardware}
+\begin{tabular}{lll}
+\toprule
+\textbf{Component} & \textbf{Development Workstation} & \textbf{Cloud Staging / Production} \\
+\midrule
+Operating System   & Windows 11 64-bit / Linux x86\_64 & Ubuntu 22.04 LTS (Containerized) \\
+Processor (CPU)    & AMD Ryzen 7 / Intel Core i7 (8 Cores) & 2 vCPU Virtual Server Instances \\
+Memory (RAM)       & 16 GB DDR4                       & 4 GB Cloud Allocation \\
+Storage            & 512 GB NVMe SSD                  & 20 GB Persistent Cloud Volume \\
+GPU Acceleration   & NVIDIA GeForce RTX (CUDA 12.0)   & CPU Inference (Optimized ONNX/Sklearn) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Software Stack and Framework Topology}
+Our client app is built with React 18 and Vite. We picked Vite mainly because Webpack was taking too long to rebuild during changes. The UI relies on React Router DOM for page navigation, and we use Axios instances to handle network calls.
+
+The core web server runs on Node.js with Express. It takes care of user logins, database interactions, and routing. Passwords get hashed through bcrypt before touching the database, and we use JSON Web Tokens (JWT) to manage user sessions. On the data side, we rely on MongoDB Atlas. Using Mongoose schemas, we set up collections for users, daily mood check-ins, journal reflections, and therapist bookings.
+
+All of our machine learning components run inside a standalone Python service powered by FastAPI. Whenever someone saves a journal entry, Node makes a background HTTP request to our FastAPI service. FastAPI runs our trained Scikit-learn model, scores the text, and sends back the result. Storing sensitive details like database URLs and JWT secrets in local \texttt{.env} files kept our credentials safe throughout development.
+
+\begin{table}[H]
+\centering
+\caption{Core Dependencies and Software Version Matrix}
+\label{tab:software_matrix}
+\begin{tabular}{llp{7.5cm}}
+\toprule
+\textbf{Subsystem} & \textbf{Framework / Tool} & \textbf{Version \& Primary Purpose} \\
+\midrule
+Client & React & 18.2.0 (Component hierarchy and UI state) \\
+Client & Vite & 5.0.0+ (Next-generation ES module frontend tooling) \\
+Client & TailwindCSS / Lucide & 3.4.0 / 0.300+ (Responsive styling and iconography) \\
+Server & Node.js / Express & 18.x / 4.19+ (REST routing and middleware) \\
+Server & Mongoose & 8.2+ (Schema modeling and MongoDB validation) \\
+Server & jsonwebtoken / bcryptjs & 9.0+ / 2.4+ (Cryptographic hashing and authentication) \\
+ML Service & FastAPI / Uvicorn & 0.109+ / 0.27+ (Asynchronous inference endpoints) \\
+ML Service & Scikit-Learn & 1.4+ (Predictive regression and NLP vectorization) \\
+ML Service & NetworkX / Sentence-Trans. & 3.2+ / 2.3+ (Semantic graph traversals) \\
+Database & MongoDB Atlas & 7.0 Clustered (NoSQL document store) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Testing and Evaluation}
+We tested NeuroLink in three main phases: making sure individual backend helper functions worked, verifying our REST endpoints under different inputs, and checking how well our machine learning models actually predicted mood and sentiment.
+
+\subsection{Software Testing and Quality Assurance}
+For the backend, we used Jest to test utility functions like date formatters and token checkers. We then ran integration checks on Postman to see how our Express routes handled both good and bad requests. For example, we verified that login attempts with wrong passwords returned 401 Unauthorized, and students trying to visit therapist-only routes were properly blocked with a 403 Forbidden.
+
+On the security side, we double-checked that passwords were never stored in plaintext and that MongoDB queries were safe from injection attacks.
+
+\subsection{Machine Learning Evaluation Methodology}
+For our machine learning tasks, we split our datasets into an 80\% train set and a 20\% test set. We evaluated our mood score regressor using Mean Absolute Error and $R^2$ score:
+\begin{equation}
+    \text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+\end{equation}
+\begin{equation}
+    R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
+\end{equation}
+
+For journal sentiment classification, which classifies text into Neutral, Negative, or Crisis, we evaluated test accuracy, macro F1, and class-level recall to make sure high-risk posts were not missed:
+\begin{equation}
+    \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+\end{equation}
+
+\section{Results and Discussion}
+This section presents our empirical results from model training, response latency benchmarks, and real-world deployment checks.
+
+\subsection{Machine Learning Experimental Results}
+
+\subsubsection{Task 1: Mood Prediction Model Comparison}
+Our early attempts at mood prediction hit an unexpected issue. When we first ran our models, we got an $R^2$ of 1.0, which seemed way too good to be true. Looking into our dataset, we realized there was clear target leakage: the target mood score had been calculated directly from depression and anxiety flags. Because the target was a direct formula of those features, the models simply solved the arithmetic. To fix this, we threw out those clinical flags and retrained our models using only demographic facts like age, study year, and marital status.
+
+Table~\ref{tab:mood_results} summarizes the test performance across three regression algorithms.
+
+\begin{table}[H]
+\centering
+\caption{Performance Comparison of Mood Regression Models (Test Set)}
+\label{tab:mood_results}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model Architecture} & \textbf{$R^2$ Score (Higher is Better)} & \textbf{MAE (Lower is Better)} \\
+\midrule
+\textbf{Linear Regression (Selected)} & \textbf{0.423} & \textbf{0.727} \\
+Gradient Boosting Regressor           & 0.169          & 0.847          \\
+Random Forest Regressor               & 0.142          & 0.803          \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Discussion:} On this cleaned demographic data, Linear Regression achieved an $R^2$ of 0.423 and an MAE of 0.727. Interestingly, tree-based models like Random Forest ($R^2 = 0.142$) and Gradient Boosting ($R^2 = 0.169$) scored much lower. With only a few demographic features and a small sample size, decision trees quickly overfitted the training data, while simple Linear Regression captured the general trend much better.
+
+\subsubsection{Task 2: Journal Sentiment and Crisis Classification}
+For sentiment analysis, we tested Logistic Regression, Linear SVM, and Random Forest on 16,203 test entries converted to TF-IDF vectors. The results are detailed in Table~\ref{tab:sentiment_results}.
+
+\begin{table}[H]
+\centering
+\caption{Classification Performance on Multi-Class Mental Health Corpus}
+\label{tab:sentiment_results}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Classifier Architecture} & \textbf{Accuracy (\%)} & \textbf{Macro F1-Score} & \textbf{Inference Latency (ms)} \\
+\midrule
+\textbf{Logistic Regression (Selected)} & \textbf{81.8\%} & \textbf{0.814} & \textbf{1.2 ms} \\
+Support Vector Machine (Linear SVM)     & 81.7\%          & 0.812          & 4.8 ms          \\
+Random Forest Classifier                & 81.0\%          & 0.801          & 14.5 ms         \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Discussion:} Logistic Regression achieved the highest accuracy at 81.8\% with an average response time of just 1.2 milliseconds. Linear SVM was right behind it at 81.7\%, but it took about 4.8 ms. Random Forest trailed at 81.0\% and was significantly slower at 14.5 ms per prediction, largely because tree splits are inefficient on wide, sparse text vectors.
+
+\begin{table}[H]
+\centering
+\caption{Confusion Matrix for Production Logistic Regression Classifier ($N=16,203$)}
+\label{tab:confusion_matrix}
+\begin{tabular}{l|ccc|r}
+\toprule
+\textbf{Actual $\backslash$ Predicted} & \textbf{CRISIS} & \textbf{NEGATIVE} & \textbf{NEUTRAL} & \textbf{Recall} \\
+\midrule
+\textbf{CRISIS}   & \textbf{3,842} & 512            & 189            & 84.6\% \\
+\textbf{NEGATIVE} & 421            & \textbf{5,104} & 834            & 79.9\% \\
+\textbf{NEUTRAL}  & 156            & 783            & \textbf{4,362} & 82.3\% \\
+\midrule
+\textbf{Precision} & 87.0\%         & 79.8\%         & 81.0\%         & \textbf{Overall: 81.8\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Crisis Safety Implication:} Looking at the crisis class specifically, our Logistic Regression model caught 3,842 out of 4,543 crisis messages, achieving an 84.6\% recall and 87.0\% precision. In a mental health platform, missing a crisis statement is far worse than mislabeling a normal post. This strong recall gives us confidence that students expressing suicidal thoughts or severe distress will get immediate emergency helpline popups.
+
+\subsection{System Performance and API Latency Benchmarks}
+We also checked endpoint response times under simulated user traffic. Table~\ref{tab:api_benchmarks} lists the observed average response latencies.
+
+\begin{table}[H]
+\centering
+\caption{System Endpoint Performance and Latency Benchmarks}
+\label{tab:api_benchmarks}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Endpoint Route} & \textbf{Subsystem \& Action} & \textbf{Mean Latency} & \textbf{Status Code} \\
+\midrule
+\texttt{POST /api/auth/login}      & Express / Bcrypt Verification   & 68 ms  & 200 OK \\
+\texttt{GET /api/wellness/summary}  & Express / MongoDB Aggregation   & 34 ms  & 200 OK \\
+\texttt{POST /api/therapist/book}  & Express / Transaction Lock      & 82 ms  & 201 Created \\
+\texttt{POST /predict/sentiment}   & FastAPI / TF-IDF + Logistic Reg & 12 ms  & 200 OK \\
+\texttt{POST /predict/mood}        & FastAPI / Linear Inference      & 4 ms   & 200 OK \\
+\texttt{GET /graph/recommendations}& FastAPI / DFS Traversal         & 24 ms  & 200 OK \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent User logins took around 68 ms due to bcrypt hashing, database wellness queries took 34 ms, and sentiment prediction finished in 12 ms. Because all endpoints responded well below 100 ms, our decoupled setup successfully kept ML tasks from slowing down user navigation.
+
+\section{Summary}
+Overall, our tests showed that splitting the platform into an Express web server and a FastAPI machine learning service worked as intended. The system handles daily wellness tracking quickly, and our machine learning models provide reliable demographic mood estimates and fast, accurate crisis detection to protect students in distress.
+
+% =========================================================
+% CHAPTER 5: STANDARDS, COST AND COMPLEX PROBLEMS
+% =========================================================
+\chapter{Standards, Cost and Complex Problems}
+
+\section{Compliance with the Standards}
+\subsection{Software Standards}
+Password strings are securely salted and hashed using \texttt{bcrypt} before database persistence. Session security relies on industry-standard JWT protocols.
+
+\subsection{Hardware Standards}
+Production deployments require cloud instances with a minimum of 2GB RAM and 1 Core CPU running Node.js runtime configurations alongside a clustered MongoDB Atlas environment.
+
+\subsection{Communication Standards}
+All system transactions flow strictly over HTTPS. REST API designs follow standard HTTP status protocols.
+
+\section{Cost Analysis}
+
+\subsection{Wideband Delphi Individual Preparation Sheets}
+Each team member compiled their effort calculations independently:
+
+\subsubsection{Estimator: Muhaiminul Amin Shafin}
+\textbf{Goal Statement}: Estimate the effort (in person-days) for the Core MVP deployment of NeuroVerse.
+\begin{itemize}
+    \item JWT authentication module: 5 days
+    \item Personal Wellness CRUD: 6 days
+    \item Therapist Booking engine: 8 days
+    \item Community Forum backend: 7 days
+    \item UI/UX Figma drafting: 6 days
+    \item System Testing: 8 days
+    \item Cloud deployment (AWS Atlas): 4 days
+    \item \textbf{Total Base Estimate}: 44 Person-Days (Delta: +10 days for responsive layout bugs).
+\end{itemize}
+
+\subsubsection{Estimator: Md. Annan}
+\textbf{Goal Statement}: Estimate the effort (in person-days) for the Core MVP deployment of NeuroVerse.
+\begin{itemize}
+    \item JWT authentication module: 3 days
+    \item Personal Wellness CRUD: 8 days
+    \item Therapist Booking engine: 10 days
+    \item Community Forum backend: 5 days
+    \item UI/UX Figma drafting: 5 days
+    \item System Testing: 7 days
+    \item Cloud deployment (AWS Atlas): 3 days
+    \item \textbf{Total Base Estimate}: 41 Person-Days (Delta: +12 days for Stripe API delays).
+\end{itemize}
+
+\subsubsection{Estimator: Mirza Samawatun Nur Astha}
+\textbf{Goal Statement}: Estimate the effort (in person-days) for the Core MVP deployment of NeuroVerse.
+\begin{itemize}
+    \item JWT authentication module: 4 days
+    \item Personal Wellness CRUD: 7 days
+    \item Therapist Booking engine: 9 days
+    \item Community Forum backend: 6 days
+    \item UI/UX Figma drafting: 4 days
+    \item System Testing: 6 days
+    \item Cloud deployment (AWS Atlas): 3 days
+    \item \textbf{Total Base Estimate}: 39 Person-Days (Delta: +16 days for database schema migrations).
+\end{itemize}
+
+\subsubsection{Estimator: Md Asif Sarkar}
+\textbf{Goal Statement}: Estimate the effort (in person-days) for the Core MVP deployment of NeuroVerse.
+\begin{itemize}
+    \item JWT authentication module: 5 days
+    \item Personal Wellness CRUD: 7 days
+    \item Therapist Booking engine: 8 days
+    \item Community Forum backend: 6 days
+    \item UI/UX Figma drafting: 5 days
+    \item System Testing: 7 days
+    \item Cloud deployment (AWS Atlas): 4 days
+    \item \textbf{Total Base Estimate}: 42 Person-Days (Delta: +13 days for QA test-plan updates).
+\end{itemize}
+
+\subsubsection{Estimator: Wasiur Rahman Sakib}
+\textbf{Goal Statement}: Estimate the effort (in person-days) for the Core MVP deployment of NeuroVerse.
+\begin{itemize}
+    \item JWT authentication module: 4 days
+    \item Personal Wellness CRUD: 7 days
+    \item Therapist Booking engine: 9 days
+    \item Community Forum backend: 6 days
+    \item UI/UX Figma drafting: 5 days
+    \item System Testing: 6 days
+    \item Cloud deployment (AWS Atlas): 3 days
+    \item \textbf{Total Base Estimate}: 40 Person-Days (Delta: +15 days for exam periods and payload testing).
+\end{itemize}
+
+\subsection{Wideband Delphi Consensus}
+Table~\ref{tab:delphi} presents the Delphi effort estimation.
+
+\begin{table}[H]
+\centering
+\caption{PERT Effort Estimation (in Person-Days)}
+\label{tab:delphi}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Major WBS Item} & \textbf{Opt (O)} & \textbf{Real (R)} & \textbf{Pess (P)} & \textbf{PERT Est.} \\ \hline
+1.0 Project Management & 12 & 15 & 24 & 16.00 \\ \hline
+2.0 System Design & 10 & 14 & 20 & 14.33 \\ \hline
+3.0 Backend Development & 25 & 35 & 50 & 35.83 \\ \hline
+4.0 Frontend Development & 30 & 42 & 60 & 43.00 \\ \hline
+5.0 Testing \& QA & 15 & 22 & 35 & 23.00 \\ \hline
+6.0 Deployment & 5 & 8 & 14 & 8.50 \\ \hline
+\textbf{Total Person-Days} & \textbf{97} & \textbf{136} & \textbf{203} & \textbf{140.66} \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Function Point Analysis}
+Table~\ref{tab:ufp_details} details the complexity profile of the 5 system features.
+
+\begin{table}[H]
+\centering
+\caption{UFP Component Classification Matrix}
+\label{tab:ufp_details}
+\begin{tabular}{lcccccr}
+\toprule
+\textbf{System Feature} & \textbf{EI} & \textbf{EO} & \textbf{EQ} & \textbf{ILF} & \textbf{EIF} & \textbf{Total Weight} \\
+\midrule
+User Profile/Registration & 2 & 1 & 0 & 1 & 0 & 21 \\
+Wellness Entry CRUD & 2 & 1 & 1 & 1 & 0 & 25 \\
+Therapist Scheduler API & 1 & 1 & 1 & 1 & 1 & 27 \\
+Forum Feed \& Moderation & 1 & 1 & 1 & 1 & 0 & 20 \\
+Cloud Dashboard Reports & 0 & 1 & 1 & 1 & 1 & 26 \\
+\midrule
+\textbf{Total Feature Counts} & \textbf{6} & \textbf{5} & \textbf{4} & \textbf{5} & \textbf{2} & \textbf{129} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ufp} maps these counts to average and high complexity weights. Total UFP is 129. After adjusting for the General System Characteristics ($DI = 45$, TCF = 1.10), the final sizing is 142 Function Points.
+
+\begin{table}[H]
+\centering
+\caption{Unadjusted Function Point (UFP) Calculation}
+\label{tab:ufp}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Function Type} & \textbf{Count} & \textbf{Avg Weight} & \textbf{Total} \\ \hline
+External Inputs (EI) & 6 & 4 & 24 \\ \hline
+External Outputs (EO) & 5 & 5 & 25 \\ \hline
+External Inquiries (EQ) & 4 & 4 & 16 \\ \hline
+Internal Logical Files (ILF) & 5 & 10 & 50 \\ \hline
+External Interface Files (EIF) & 2 & 7 & 14 \\ \hline
+\textbf{Total UFP} & & & \textbf{129} \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Justification of Complexity Weights}
+\begin{itemize}
+    \item \textbf{External Inputs (EI)}: Assigned Average weight (4) because forms require input verification, validation checks, and sanitation before MongoDB storage.
+    \item \textbf{External Outputs (EO)}: Assigned High weight (5) because reports construct dynamic charts mapping historical stress and mood metrics.
+    \item \textbf{External Inquiries (EQ)}: Assigned Average weight (4) because queries require joining data from therapist and booking ledgers to check slot availability.
+    \item \textbf{Internal Logical Files (ILF)}: Assigned High complexity (10) due to structured relational dependencies, indexing, and MongoDB schema validations.
+    \item \textbf{External Interface Files (EIF)}: Assigned Average weight (7) because they communicate with external transaction structures (Stripe gateway).
+\end{itemize}
+
+\subsection{COCOMO Sizing}
+Using the 142 FP, the line conversion (50 LOC/FP) results in 7.1 KLOC. Under Semi-detached rules:
+\[ E = 3.0 \times (7.1)^{1.12} \approx 27.15 \text{ Person-Months} \]
+\[ D = 2.5 \times (27.15)^{0.35} \approx 7.9 \text{ Months} \]
+This validates the 8-month Gantt timeline.
+
+\section{Complex Engineering Problem}
+
+\subsection{Risk Plan Register}
+Table~\ref{tab:risk} shows the risks identified for the platform, which require strict proactive mitigations and continuous monitoring.
+
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.5cm}|p{1.5cm}|p{5cm}|}
+\caption{NeuroVerse Risk Register} \label{tab:risk} \\
+\hline
+\textbf{Risk Description} & \textbf{Category} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation Strategy} \\ \hline
+\endfirsthead
+\multicolumn{5}{c}%
+{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\hline
+\textbf{Risk Description} & \textbf{Category} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation Strategy} \\ \hline
+\endhead
+\hline \multicolumn{5}{r}{\textit{Continued on next page}} \\
+\endfoot
+\hline
+\endlastfoot
+
+Data Breach of sensitive health records. & Legal / Tech & Low & High & Enforce HTTPS, salt/hash passwords with bcrypt, strict JWT expirations, and sanitize all MongoDB inputs. \\ \hline
+Scope Creep from new feature ideas. & Project Mgmt & High & Medium & Strict adherence to the Scrum backlog. Product Owner to defer non-critical features to post-launch updates. \\ \hline
+User experiencing a mental health crisis. & External & Med & High & Clearly disclaim the app is not for emergencies; provide persistent UI links to national crisis hotlines. \\ \hline
+Technical Debt from rapid iteration. & Technical & Med & Med & Mandate code reviews, utilize ESLint, and allocate time in every third sprint for code refactoring. \\ \hline
+Low user adoption post-launch. & External & Med & High & Conduct early beta testing with target demographics to ensure UI/UX meets real-world needs. \\ \hline
+\end{longtable}
+
+\subsection{Complex Problem Solving: Individual Risk Information Sheets}
+To systematically manage major risk events, individual sheets are assigned to members:
+
+\subsubsection{Member: Muhaiminul Amin Shafin}
+\textbf{Risk ID}: RI-Shafin-02 \hfill \textbf{Date}: April 23, 2026\\
+\textbf{Probability}: High (4) \hfill \textbf{Impact}: Medium (6) \\
+\textbf{Description}: UI/UX mismatch causing high bounce rates.
+\textbf{Refinement/Context}: Users find the mood entry interface tedious or confusing.
+\textbf{Mitigation/Monitoring}: Conduct Figma review sessions and release a baseline interactive dashboard prototype.
+\textbf{Contingency Plan}: Revert to simple 5-emoji radio buttons if form submission completion rate drops below 70\% in pilot tests.
+
+\subsubsection{Member: Md. Annan}
+\textbf{Risk ID}: RI-Annan-03 \hfill \textbf{Date}: April 23, 2026\\
+\textbf{Probability}: Medium (3) \hfill \textbf{Impact}: High (8) \\
+\textbf{Description}: Failure or slow response of the therapist booking transaction ledger.
+\textbf{Refinement/Context}: Stripe/SSLCommerz sandbox API timeout during peak load.
+\textbf{Mitigation/Monitoring}: Set up asynchronous payment handlers and error log queues.
+\textbf{Contingency Plan}: Cache booking slots in local database and use offline bank transfer verification paths if payment server times out.
+
+\subsubsection{Member: Mirza Samawatun Nur Astha}
+\textbf{Risk ID}: RI-Astha-04 \hfill \textbf{Date}: April 23, 2026\\
+\textbf{Probability}: Medium (3) \hfill \textbf{Impact}: Medium (5) \\
+\textbf{Description}: Host server downtime on Render or Vercel.
+\textbf{Refinement/Context}: Server crashes during peak daily stand-ups.
+\textbf{Mitigation/Monitoring}: Monitor system uptime using cloud alerts.
+\textbf{Contingency Plan}: Establish a secondary mirror backend container on AWS Lightsail.
+
+\subsubsection{Member: Md Asif Sarkar}
+\textbf{Risk ID}: RI-Sarkar-05 \hfill \textbf{Date}: April 23, 2026\\
+\textbf{Probability}: High (4) \hfill \textbf{Impact}: Medium (6) \\
+\textbf{Description}: Incomplete forum moderation resulting in toxic user interactions.
+\textbf{Refinement/Context}: Offensive posts remain online during administrator offline hours.
+\textbf{Mitigation/Monitoring}: Build automated word filters using standard regex matchers.
+\textbf{Contingency Plan}: Trigger automatic post-flagging and hide content if more than two users report a thread.
+
+\subsubsection{Member: Wasiur Rahman Sakib}
+\textbf{Risk ID}: RI-Sakib-01 \hfill \textbf{Date}: April 23, 2026\\
+\textbf{Probability}: Low (2) \hfill \textbf{Impact}: Critical (10) \\
+\textbf{Description}: Unauthorized access or leakage of user wellness journals and StressQuiz scores.
+\textbf{Refinement/Context}: 
+\begin{enumerate}
+    \item Intercepted API calls containing raw clinical logs.
+    \item Database breach due to weak Atlas configuration.
+\end{enumerate}
+\textbf{Mitigation/Monitoring}: Implement HTTPS-only routing, use Mongoose validation schemas, and run weekly MongoDB security configuration logs.
+\textbf{Contingency Plan}: Trigger server lockdown and force invalidate all active JWT sessions if API anomaly requests exceed 50 per minute.
+
+\subsection{Engineering Activities: Review and Verification Techniques}
+Review techniques are critical quality assurance mechanisms utilized to identify defects early in the software development lifecycle. Catching bugs, architectural flaws, or security vulnerabilities before code is merged into the main branch exponentially reduces the cost of fixing them and ensures technical debt is kept to a minimum.
+
+\subsubsection{Types of Review Techniques}
+\begin{itemize}
+    \item \textbf{Inspections:} Highly formal reviews led by a trained moderator using strict checklists.
+    \item \textbf{Deskchecks:} An informal review where an author asks a peer to look over their code at their desk.
+    \item \textbf{Walkthroughs:} The author leads a team through a manual simulation of the code or design.
+    \item \textbf{Code Reviews:} Systematic examination of source code, often enforced via pull requests in version control systems.
+    \item \textbf{Pair Programming:} Two developers work simultaneously at one workstation, providing continuous, real-time code review.
+\end{itemize}
+
+\subsubsection{Chosen Review Technique}
+For NeuroVerse, the team has chosen \textbf{Code Reviews (via Pull Requests)} and strategic \textbf{Pair Programming}. 
+Given our Agile Scrum framework, formal inspections are too slow. Code Reviews via GitHub Pull Requests allow asynchronous, traceable critiques of code before it enters the `main` branch, ensuring high quality without bottlenecking development. Pair programming is utilized selectively for the most complex features—such as implementing the secure JWT authentication flow and the real-time scheduling algorithm—where two heads significantly reduce logic errors and improve security posture.
+
+\section{Summary}
+Chapter 5 verified system cost constraints, standard compliance, testing frameworks, and risk profiles.
+
+% =========================================================
+% CHAPTER 6: CONCLUSION
+% =========================================================
+\chapter{Conclusion and Future Directions}
+
+\section{Conclusion}
+The NeuroVerse platform addresses essential digital well-being requirements for students. Unifying daily tracking widgets with clinical reservations under a strict MERN implementation establishes a secure framework that is delivered on schedule and under budget.
+
+\section{Future Directions}
+Future expansions will implement local sentiment models to detect journal entries' emotional states, introduce Apple HealthKit integrations, and develop native mobile companion applications.
+
+% =========================================================
+% REFERENCES
+% =========================================================
+\let\clearpage\origclearpage
+\let\cleardoublepage\origcleardoublepage
+\clearpage
+
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{References}
+
+\bibitem{mern}
+Chodorow, K. (2013). \textit{MongoDB: The Definitive Guide}. O'Reilly Media.
+
+\bibitem{agile}
+Schwaber, K., \& Beedle, M. (2002). \textit{Agile Software Development with Scrum}. Prentice Hall.
+
+\bibitem{cocomo}
+Boehm, B. W. (1981). \textit{Software Engineering Economics}. Prentice-Hall.
+
+\bibitem{delphi}
+Boehm, B. W. (1984). Software Engineering Economics. \textit{IEEE Transactions on Software Engineering}, SE-10(1), 4-21.
+
+\bibitem{fpa}
+Albrecht, A. J., \& Gaffney, J. R. (1983). Software Function, Source Lines of Code, and Development Effort Prediction: A Software Science Validation. \textit{IEEE Transactions on Software Engineering}, SE-9(6), 639-648.
+
+\bibitem{islam2020}
+Islam, M. S., et al. (2020). Depression and anxiety among university students: A systematic review and meta-analysis. \textit{Journal of Affective Disorders}, 277, 715--728.
+
+\bibitem{sklearn}
+Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. \textit{Journal of Machine Learning Research}, 12, 2825--2830.
+
+\bibitem{fastapi}
+Tiangolo, S. (2018). \textit{FastAPI: High performance, easy to learn, fast to code, ready for production}. Available: \url{https://fastapi.tiangolo.com}.
+
+\bibitem{nodejs}
+Tilkov, S., \& Vinoski, S. (2010). Node. js: Using JavaScript to build high-performance network programs. \textit{IEEE Internet Computing}, 14(6), 80--83.
+
+\bibitem{nlp_sentiment}
+Bank, M. A., et al. (2021). Mental health sentiment analysis on social media datasets using machine learning. \textit{IEEE Access}, 9, 102432--102445.
+
+\end{thebibliography}
+
+% =========================================================
+% CONTRIBUTION
+% =========================================================
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Contribution}
+\chapter*{Contribution}
+
+This section presents the individual contributions of each team member in the development of the NeuroVerse: Student Mental Health Wellness Platform.
+
+\begin{enumerate}
+\item \textbf{Muhaiminul Amin Shafin}
+\begin{itemize}
+\item Section 1.4: Methodology
+\item Section 2.3: Gap Analysis
+\item Section 3.1.2: Context Diagram
+\item Section 3.1.3: Data Flow Diagram
+\item Section 3.1.4: UI Design
+\item Section 5.4 Complex Engineering Problem
+\item Section 5.4.1 Complex Problem Solving
+\end{itemize}
+
+\item\textbf{Md. Annan}
+\begin{itemize}
+\item Section 1.2: Motivation
+\item Section 2.2.1: Similar Applications
+\item Chapter 3: Project Plan
+\item Chapter 5.1.2 Hardware Standards
+\item Chapter 5.1.3 Communication Standards
+\end{itemize}
+
+\item\textbf{Mirza Samawatun Nur Astha}
+\begin{itemize}
+\item Section 1.3: Objectives
+\item Section 1.6: Organization of the Report
+\item Section 2.1: Preliminaries
+\item Section 2.2: Literature Review
+\item Section 3.2: Detailed Methodology and Design
+\item Section 3.5: Summary
+\item Section 5.3 Cost Analysis
+\item Section 5.5 Summary 
+\end{itemize}
+
+\item\textbf{Md Asif Sarkar}
+\begin{itemize}
+\item Section 1.1: Overview
+\item Section 2.4: Summary
+\item Section 3.4: Task Allocation
+\item Section 5.1 Compliance with the Standards
+\item Section 5.1.1 Software Standards
+\end{itemize}
+
+\item\textbf{Wasiur Rahman Sakib}
+\begin{itemize}
+\item Section 1.5: Project Outcome
+\item Section 2.2.2: Related Research
+\item Section 3.1: Requirement Analysis
+\item Section 3.1.1: Functional and Non-Functional Requirements
+\item Section 5.4.2 Engineering Activities
+\end{itemize}
+\end{enumerate}
+
+\end{document}
